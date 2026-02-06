@@ -5,13 +5,12 @@
   },
   "metadata": {
     "description": "Tiger's Claude Code plugins collection - custom plugins and curated favorites",
-    "version": "0.1.0",
-    "pluginRoot": "./plugins"
+    "version": "0.1.0"
   },
   "plugins": [
     {
       "name": "codex-bridge",
-      "source": "codex-bridge",
+      "source": "./plugins/codex-bridge",
       "description": "Bridge OpenAI Codex CLI into Claude Code for cross-model review, verification, task delegation and collaborative generation",
       "version": "0.1.0",
       "author": {

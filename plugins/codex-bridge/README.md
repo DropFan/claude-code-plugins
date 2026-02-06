@@ -1,0 +1,57 @@
+# Codex Bridge
+
+Bridge [OpenAI Codex CLI](https://github.com/openai/codex) into Claude Code for cross-model review, verification, task delegation and collaborative generation.
+
+## Prerequisites
+
+- [Codex CLI](https://github.com/openai/codex) installed: `npm install -g @openai/codex`
+- OpenAI API key configured: `codex login`
+- Working inside a git repository
+
+## Commands
+
+### `/codex <prompt>`
+
+Send a prompt to Codex CLI in read-only sandbox mode and return the result.
+
+```
+/codex "Analyze the error handling in src/api/handler.go"
+```
+
+### `/codex-review [branch | commit-sha | instructions]`
+
+Run Codex code review on current changes or a specific branch/commit.
+
+```
+/codex-review                          # Review uncommitted changes
+/codex-review main                     # Diff against main branch
+/codex-review abc1234                  # Review specific commit
+/codex-review "Focus on security"      # Review with custom focus
+```
+
+## Skill
+
+The **Codex Bridge** skill also triggers on natural language like "ask codex", "get a second opinion", "let codex review", etc.
+
+## Usage Patterns
+
+| Pattern | Description | Sandbox |
+|---------|-------------|---------|
+| Code Review | Run `codex review` on changes | read-only |
+| Second Opinion | Get Codex's take on a design decision | read-only |
+| Task Delegation | Delegate implementation to Codex | workspace-write (requires approval) |
+| Collaborative Generation | Claude designs, Codex implements | workspace-write (requires approval) |
+| Document Review | Have Codex review specs/docs | read-only |
+
+See [usage-patterns.md](./skills/codex/references/usage-patterns.md) for detailed prompt templates.
+
+## Safety
+
+- Default sandbox mode is `read-only` — no file writes
+- `workspace-write` requires manual user approval
+- Dangerous flags (`--dangerously-bypass-approvals-and-sandbox`, `--full-auto`, `--sandbox danger-full-access`) are explicitly forbidden
+- Secrets are never passed in Codex prompts
+
+## License
+
+MIT
