@@ -1,5 +1,5 @@
 ---
-allowed-tools: Bash(pwd:*), Bash(codex review:*), Bash(codex --version:*), Bash(wc:*), Bash(ls:*), Bash(tree:*), Bash(file:*), Bash(git status:*), Bash(git diff:*), Bash(git log:*), Bash(git show:*), Bash(git blame:*), Bash(git branch:*), Bash(git rev-parse:*), Read
+allowed-tools: Bash(pwd:*), Bash(codex review:*), Bash(codex --version:*), Bash(git status:*), Bash(git diff:*), Bash(git log:*), Bash(git show:*), Bash(git branch:*), Bash(git rev-parse:*), Read
 description: Run OpenAI Codex code review on current changes or a specific branch/commit
 argument-hint: "[branch | commit-sha | review instructions]"
 ---
@@ -7,7 +7,8 @@ argument-hint: "[branch | commit-sha | review instructions]"
 ## Context
 
 - Working directory: !`pwd`
-- Current branch: !`git branch --show-current 2>/dev/null || echo "not a git repo"`
+- Codex installed: !`codex --version 2>&1 || echo "NOT INSTALLED"`
+- Current branch: !`git branch --show-current 2>/dev/null || echo "NOT A GIT REPO"`
 - Uncommitted changes: !`git status --short 2>/dev/null | head -20`
 
 ## Task
@@ -15,6 +16,11 @@ argument-hint: "[branch | commit-sha | review instructions]"
 Run Codex CLI code review and present findings.
 
 **User arguments:** $ARGUMENTS
+
+### Pre-checks
+
+1. If Codex is not installed (version shows "NOT INSTALLED"), tell the user to install it with `npm install -g @openai/codex` and stop.
+2. If not in a git repo (branch shows "NOT A GIT REPO"), tell the user this command requires a git repository and stop.
 
 ### Step 1: Determine Review Scope
 
@@ -30,7 +36,9 @@ git rev-parse --verify "$ARGUMENTS^{commit}" 2>/dev/null  # success → valid co
 | Empty or `uncommitted` | `codex review --uncommitted` |
 | Verified as a branch name | `codex review --base $ARGUMENTS` |
 | Verified as a commit SHA | `codex review --commit $ARGUMENTS` |
-| Contains natural language instructions | `codex review --uncommitted "$ARGUMENTS"` |
+| Contains natural language instructions | `codex review "$ARGUMENTS"` |
+
+> **Note:** Codex CLI does not allow `--uncommitted` and `[PROMPT]` together. When custom instructions are provided, pass them as the positional argument without `--uncommitted` — Codex defaults to reviewing uncommitted changes.
 
 ### Step 2: Gather Context
 

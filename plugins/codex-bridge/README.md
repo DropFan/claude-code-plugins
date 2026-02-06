@@ -50,7 +50,7 @@ See [usage-patterns.md](./skills/codex/references/usage-patterns.md) for detaile
 - Default sandbox mode is `read-only` — no file writes
 - `workspace-write` requires manual user approval
 - Dangerous flags (`--dangerously-bypass-approvals-and-sandbox`, `--full-auto`, `--sandbox danger-full-access`) are explicitly forbidden
-- Secrets are never passed in Codex prompts
+- Users should avoid passing secrets (API keys, tokens, passwords) in Codex prompts
 
 ## License
 

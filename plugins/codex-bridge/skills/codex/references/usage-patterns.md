@@ -12,11 +12,10 @@ Detailed prompt templates for each usage pattern. All examples use `--sandbox re
 codex review --uncommitted
 ```
 
-With focused review criteria:
+With focused review criteria (note: `--uncommitted` and `[PROMPT]` are mutually exclusive in Codex CLI):
 
 ```bash
-codex review --uncommitted \
-  "Focus on: 1) error handling completeness 2) potential race conditions 3) missing edge cases. Ignore formatting issues."
+codex review "Focus on: 1) error handling completeness 2) potential race conditions 3) missing edge cases. Ignore formatting issues."
 ```
 
 ### Branch Diff
@@ -75,7 +74,7 @@ codex exec --sandbox read-only -o /tmp/codex-bridge-XXXXXXXX \
 
 ## Pattern C: Task Delegation
 
-> **Safety:** `workspace-write` is NOT auto-approved by `/codex` command. These examples require direct Bash calls, which will prompt for manual user approval. Never use `danger-full-access` or `--dangerously-bypass-approvals-and-sandbox`.
+> **Safety:** `workspace-write` is NOT auto-approved by `/codex-bridge:codex` command. These examples require direct Bash calls, which will prompt for manual user approval. Never use `danger-full-access` or `--dangerously-bypass-approvals-and-sandbox`.
 
 ### Analyze Then Implement (Two-Step)
 

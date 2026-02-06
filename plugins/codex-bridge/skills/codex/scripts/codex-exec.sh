@@ -39,17 +39,24 @@ USAGE
     exit 0
 }
 
+require_arg() {
+    # $1 = remaining arg count from caller's $#, $2 = option name
+    if [[ $1 -lt 2 ]]; then
+        echo "ERROR: $2 requires a value" >&2; exit 1
+    fi
+}
+
 while [[ $# -gt 0 ]]; do
     case "$1" in
-        --mode)         MODE="$2"; shift 2 ;;
-        --sandbox)      SANDBOX="$2"; shift 2 ;;
-        --model)        MODEL="$2"; shift 2 ;;
-        --dir)          WORKDIR="$2"; shift 2 ;;
-        --timeout)      TIMEOUT="$2"; shift 2 ;;
-        --output)       OUTPUT_FILE="$2"; shift 2 ;;
+        --mode)         require_arg $# "$1"; MODE="$2"; shift 2 ;;
+        --sandbox)      require_arg $# "$1"; SANDBOX="$2"; shift 2 ;;
+        --model)        require_arg $# "$1"; MODEL="$2"; shift 2 ;;
+        --dir)          require_arg $# "$1"; WORKDIR="$2"; shift 2 ;;
+        --timeout)      require_arg $# "$1"; TIMEOUT="$2"; shift 2 ;;
+        --output)       require_arg $# "$1"; OUTPUT_FILE="$2"; shift 2 ;;
         --uncommitted)  EXTRA_ARGS+=("$1"); shift ;;
         --base|--commit|--title)
-            EXTRA_ARGS+=("$1" "$2"); shift 2 ;;
+            require_arg $# "$1"; EXTRA_ARGS+=("$1" "$2"); shift 2 ;;
         -h|--help)      usage ;;
         --)             shift; PROMPT="$*"; break ;;
         -*)             echo "Unknown option: $1" >&2; exit 1 ;;
@@ -81,16 +88,31 @@ if ! [[ "$TIMEOUT" =~ ^[0-9]+$ ]] || [[ "$TIMEOUT" -le 0 ]]; then
     exit 1
 fi
 
-# Validate --output path (must be under /tmp/)
-if [[ -n "$OUTPUT_FILE" && "$OUTPUT_FILE" != /tmp/* ]]; then
-    echo "ERROR: --output path must be under /tmp/, got '$OUTPUT_FILE'" >&2
-    exit 1
+# Validate --output path (must resolve to /tmp/ or /private/tmp/ after canonicalization)
+if [[ -n "$OUTPUT_FILE" ]]; then
+    RESOLVED_OUTPUT="$(cd "$(dirname "$OUTPUT_FILE")" 2>/dev/null && pwd -P)/$(basename "$OUTPUT_FILE")" || true
+    if [[ "$RESOLVED_OUTPUT" != /tmp/* && "$RESOLVED_OUTPUT" != /private/tmp/* ]]; then
+        echo "ERROR: --output path must resolve to /tmp/, got '$OUTPUT_FILE' (resolved: '$RESOLVED_OUTPUT')" >&2
+        exit 1
+    fi
 fi
 
 # Verify codex is installed
 if ! command -v codex &>/dev/null; then
     echo "ERROR: Codex CLI not found. Install with: npm install -g @openai/codex" >&2
     exit 127
+fi
+
+# Validate review mode: check mutually exclusive scope flags
+if [[ "$MODE" == "review" ]]; then
+    SCOPE_COUNT=0
+    for arg in "${EXTRA_ARGS[@]}"; do
+        case "$arg" in --uncommitted|--base|--commit) SCOPE_COUNT=$((SCOPE_COUNT + 1)) ;; esac
+    done
+    if [[ $SCOPE_COUNT -gt 1 ]]; then
+        echo "ERROR: --uncommitted, --base, and --commit are mutually exclusive" >&2
+        exit 1
+    fi
 fi
 
 # Build command
@@ -106,9 +128,9 @@ else
     [[ -n "$MODEL" ]] && CMD+=(-m "$MODEL")
     [[ -n "$WORKDIR" ]] && CMD+=(-C "$WORKDIR")
 
-    # Auto-generate output file if not specified
+    # Auto-generate output file if not specified (use mktemp to avoid predictable paths)
     if [[ -z "$OUTPUT_FILE" ]]; then
-        OUTPUT_FILE="/tmp/codex-output-$$.md"
+        OUTPUT_FILE="$(mktemp /tmp/codex-bridge-XXXXXXXX)"
     fi
     CMD+=(-o "$OUTPUT_FILE")
 

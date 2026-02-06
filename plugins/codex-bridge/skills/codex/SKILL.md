@@ -14,8 +14,9 @@ version: 0.1.0
 # Codex Bridge
 
 Bridge OpenAI Codex CLI into Claude Code as an external sub-agent.
-All interactions use non-interactive mode (`codex exec` / `codex review`),
-output is captured via `-o` flag and integrated back into the current session.
+All interactions use non-interactive mode (`codex exec` / `codex review`).
+For `codex exec`, output is captured via `-o` flag; for `codex review`, output goes to stdout.
+Results are integrated back into the current session.
 
 ## Prerequisites
 
@@ -45,7 +46,7 @@ codex exec --sandbox read-only -o "$(mktemp /tmp/codex-bridge-XXXXXXXX)" "<promp
 codex review --uncommitted                        # All uncommitted changes
 codex review --base <branch>                      # Diff against branch
 codex review --commit <sha>                       # Specific commit
-codex review --uncommitted "<focus instructions>" # Custom focus
+codex review "<focus instructions>"              # Custom focus (--uncommitted and PROMPT are mutually exclusive)
 ```
 
 ## Usage Patterns

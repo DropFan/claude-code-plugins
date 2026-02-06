@@ -1,5 +1,5 @@
 ---
-allowed-tools: Bash(pwd:*), Bash(mktemp:*), Bash(codex exec --sandbox read-only:*), Bash(codex --version:*), Bash(wc:*), Bash(ls:*), Bash(tree:*), Bash(file:*), Bash(git status:*), Bash(git diff:*), Bash(git log:*), Bash(git show:*), Bash(git branch:*), Read
+allowed-tools: Bash(pwd:*), Bash(mktemp:*), Bash(codex exec --sandbox read-only:*), Bash(codex --version:*), Read
 description: Run a prompt through OpenAI Codex CLI and return the result
 argument-hint: "<prompt to send to Codex>"
 ---
