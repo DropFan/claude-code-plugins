@@ -1,0 +1,8 @@
+{
+  "name": "codex-bridge",
+  "description": "Bridge OpenAI Codex CLI into Claude Code for cross-model review, verification, task delegation and collaborative generation",
+  "version": "0.1.0",
+  "author": {
+    "name": "Tiger"
+  }
+}
