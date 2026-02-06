@@ -10,23 +10,23 @@ Bridge [OpenAI Codex CLI](https://github.com/openai/codex) into Claude Code for 
 
 ## Commands
 
-### `/codex <prompt>`
+### `/codex-bridge:codex <prompt>`
 
 Send a prompt to Codex CLI in read-only sandbox mode and return the result.
 
 ```
-/codex "Analyze the error handling in src/api/handler.go"
+/codex-bridge:codex "Analyze the error handling in src/api/handler.go"
 ```
 
-### `/codex-review [branch | commit-sha | instructions]`
+### `/codex-bridge:codex-review [branch | commit-sha | instructions]`
 
 Run Codex code review on current changes or a specific branch/commit.
 
 ```
-/codex-review                          # Review uncommitted changes
-/codex-review main                     # Diff against main branch
-/codex-review abc1234                  # Review specific commit
-/codex-review "Focus on security"      # Review with custom focus
+/codex-bridge:codex-review                          # Review uncommitted changes
+/codex-bridge:codex-review main                     # Diff against main branch
+/codex-bridge:codex-review abc1234                  # Review specific commit
+/codex-bridge:codex-review "Focus on security"      # Review with custom focus
 ```
 
 ## Skill

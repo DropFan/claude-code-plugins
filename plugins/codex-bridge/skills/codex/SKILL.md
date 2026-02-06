@@ -71,7 +71,7 @@ codex review --uncommitted "<focus instructions>" # Custom focus
 3. Choose sandbox mode: `read-only` for analysis, `workspace-write` for code generation
 4. Run, capture, integrate result
 
-> Note: `workspace-write` is not auto-approved by `/codex` command. User will be prompted to confirm.
+> Note: `workspace-write` is not auto-approved by `/codex-bridge:codex` command. User will be prompted to confirm.
 
 ### D. Collaborative Generation
 
@@ -115,7 +115,7 @@ codex exec -m <model-name> --sandbox read-only -o "$(mktemp /tmp/codex-bridge-XX
    - `--sandbox danger-full-access` (unrestricted filesystem access)
 3. **Never pass secrets** (API keys, tokens, passwords) in Codex prompts
 4. **Always use `-C`** to set working directory when it matters
-5. **`/codex` command is read-only only** — `workspace-write` operations must go through direct Bash calls, which require manual user approval
+5. **`/codex-bridge:codex` command is read-only only** — `workspace-write` operations must go through direct Bash calls, which require manual user approval
 
 ## Error Handling
 
@@ -129,4 +129,4 @@ codex exec -m <model-name> --sandbox read-only -o "$(mktemp /tmp/codex-bridge-XX
 ## Additional Resources
 
 - **`references/usage-patterns.md`** — Detailed prompt templates for each pattern
-- **`scripts/codex-exec.sh`** — Standalone wrapper script for terminal use (not called by `/codex` or `/codex-review` commands). Provides timeout, parameter validation, and error handling. Useful for manual invocation or CI integration.
+- **`scripts/codex-exec.sh`** — Standalone wrapper script for terminal use (not called by `/codex-bridge:codex` or `/codex-bridge:codex-review` commands). Provides timeout, parameter validation, and error handling. Useful for manual invocation or CI integration.

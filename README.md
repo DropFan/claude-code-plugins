@@ -18,9 +18,9 @@ Then browse and install plugins:
 
 ## Plugins
 
-| Plugin | Description | Version |
-|--------|-------------|---------|
-| [codex-bridge](./plugins/codex-bridge) | Bridge OpenAI Codex CLI into Claude Code for cross-model review, verification, task delegation and collaborative generation | 0.1.0 |
+| Plugin | Description | Install | Version |
+|--------|-------------|---------|---------|
+| [codex-bridge](./plugins/codex-bridge) | Bridge OpenAI Codex CLI into Claude Code for cross-model review, verification, task delegation and collaborative generation | `/plugin install codex-bridge@tiger-plugins` | 0.1.0 |
 
 ## Repository Structure
 
