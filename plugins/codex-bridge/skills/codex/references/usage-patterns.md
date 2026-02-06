@@ -2,7 +2,7 @@
 
 Detailed prompt templates for each usage pattern. All examples use `--sandbox read-only` unless explicitly noted.
 
-> **Output paths:** Examples below use `/tmp/codex-bridge-XXXXXXXX.md` as a placeholder. In practice, always generate a unique path via `mktemp /tmp/codex-bridge-XXXXXXXX.md` to avoid conflicts between concurrent runs.
+> **Output paths:** Examples below use `/tmp/codex-bridge-XXXXXXXX` as a placeholder. In practice, always generate a unique path via `mktemp /tmp/codex-bridge-XXXXXXXX` to avoid conflicts between concurrent runs.
 
 ## Pattern A: Code Review
 
@@ -44,7 +44,7 @@ codex review --uncommitted --title "feat: add user authentication middleware"
 ### Verify an Implementation Approach
 
 ```bash
-codex exec --sandbox read-only -o /tmp/codex-bridge-XXXXXXXX.md \
+codex exec --sandbox read-only -o /tmp/codex-bridge-XXXXXXXX \
   "Review the implementation in <file-path>. We chose <approach> because <reason>.
    Identify:
    1. Design issues or anti-patterns
@@ -56,7 +56,7 @@ codex exec --sandbox read-only -o /tmp/codex-bridge-XXXXXXXX.md \
 ### Cross-validate a Design Decision
 
 ```bash
-codex exec --sandbox read-only -o /tmp/codex-bridge-XXXXXXXX.md \
+codex exec --sandbox read-only -o /tmp/codex-bridge-XXXXXXXX \
   "We are deciding between:
    - Option A: <description>
    - Option B: <description>
@@ -68,7 +68,7 @@ codex exec --sandbox read-only -o /tmp/codex-bridge-XXXXXXXX.md \
 ### Verify Documentation Accuracy
 
 ```bash
-codex exec --sandbox read-only -o /tmp/codex-bridge-XXXXXXXX.md \
+codex exec --sandbox read-only -o /tmp/codex-bridge-XXXXXXXX \
   "Compare <doc-path> against the actual codebase.
    Flag: outdated information, missing sections, incorrect descriptions."
 ```
@@ -81,7 +81,7 @@ codex exec --sandbox read-only -o /tmp/codex-bridge-XXXXXXXX.md \
 
 ```bash
 # Step 1: Read-only analysis
-codex exec --sandbox read-only -o /tmp/codex-bridge-XXXXXXXX.md \
+codex exec --sandbox read-only -o /tmp/codex-bridge-XXXXXXXX \
   "Analyze the codebase and propose how to implement <feature>.
    Output: file locations, function signatures, key design decisions."
 
@@ -142,7 +142,7 @@ Claude reads the result afterward, addresses any issues found.
 ### Review Design Document
 
 ```bash
-codex exec --sandbox read-only -o /tmp/codex-bridge-XXXXXXXX.md \
+codex exec --sandbox read-only -o /tmp/codex-bridge-XXXXXXXX \
   "Review <doc-path>. Evaluate:
    1. Technical accuracy against the codebase
    2. Completeness — any missing scenarios?
@@ -153,7 +153,7 @@ codex exec --sandbox read-only -o /tmp/codex-bridge-XXXXXXXX.md \
 ### Review API Specification
 
 ```bash
-codex exec --sandbox read-only -o /tmp/codex-bridge-XXXXXXXX.md \
+codex exec --sandbox read-only -o /tmp/codex-bridge-XXXXXXXX \
   "Review the OpenAPI spec at <spec-path>. Check:
    1. Naming consistency (snake_case for fields, plural resources)
    2. Missing error responses
@@ -181,7 +181,7 @@ Always include in the prompt:
 ### Output Format: Set Expectations
 
 ```bash
-codex exec --sandbox read-only -o /tmp/codex-bridge-XXXXXXXX.md \
+codex exec --sandbox read-only -o /tmp/codex-bridge-XXXXXXXX \
   "Analyze <target>. Provide:
    1. Summary (2-3 sentences)
    2. Issues (bulleted, with severity: high/medium/low)
@@ -202,8 +202,8 @@ model_reasoning_effort = "high"     # low / medium / high
 
 ```bash
 # Override model
-codex exec -m <other-model> --sandbox read-only -o /tmp/codex-bridge-XXXXXXXX.md "<prompt>"
+codex exec -m <other-model> --sandbox read-only -o /tmp/codex-bridge-XXXXXXXX "<prompt>"
 
 # Override reasoning effort
-codex exec -c 'model_reasoning_effort="medium"' --sandbox read-only -o /tmp/codex-bridge-XXXXXXXX.md "<prompt>"
+codex exec -c 'model_reasoning_effort="medium"' --sandbox read-only -o /tmp/codex-bridge-XXXXXXXX "<prompt>"
 ```

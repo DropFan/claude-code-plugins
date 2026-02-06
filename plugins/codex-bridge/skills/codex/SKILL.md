@@ -4,8 +4,10 @@ description: >
   This skill should be used when the user asks to "use codex", "ask codex",
   "let codex review", "get a second opinion", "compare with codex",
   "delegate to codex", "codex review my code", "have codex check this",
+  "用 codex", "让 codex 看看", "codex 审查", "codex 帮我看", "用 codex 分析",
+  "让 codex 帮忙", "交给 codex", "codex 看一下", "换 codex 看看",
   or when cross-model verification, code review, or collaborative generation
-  with OpenAI Codex CLI is needed. Also triggers on /codex and /codex-review commands.
+  with OpenAI Codex CLI is needed.
 version: 0.1.0
 ---
 
@@ -26,7 +28,7 @@ output is captured via `-o` flag and integrated back into the current session.
 ### `codex exec` — General Execution
 
 ```bash
-codex exec --sandbox read-only -o "$(mktemp /tmp/codex-bridge-XXXXXXXX.md)" "<prompt>"
+codex exec --sandbox read-only -o "$(mktemp /tmp/codex-bridge-XXXXXXXX)" "<prompt>"
 ```
 
 | Flag | Purpose |
@@ -59,7 +61,7 @@ codex review --uncommitted "<focus instructions>" # Custom focus
 
 1. Gather context: what was done, what needs verification
 2. Compose a focused prompt describing the specific question
-3. Run `codex exec --sandbox read-only -o "$(mktemp /tmp/codex-bridge-XXXXXXXX.md)" "<prompt>"`
+3. Run `codex exec --sandbox read-only -o "$(mktemp /tmp/codex-bridge-XXXXXXXX)" "<prompt>"`
 4. Read output, highlight agreements and disagreements with Claude's analysis
 
 ### C. Task Delegation
@@ -84,7 +86,7 @@ codex review --uncommitted "<focus instructions>" # Custom focus
 
 Same as Pattern B, but prompt explicitly points to document paths:
 ```bash
-codex exec --sandbox read-only -o "$(mktemp /tmp/codex-bridge-XXXXXXXX.md)" \
+codex exec --sandbox read-only -o "$(mktemp /tmp/codex-bridge-XXXXXXXX)" \
   "Review docs/designs/xxx.md for technical accuracy, completeness, and feasibility."
 ```
 
@@ -94,12 +96,12 @@ Codex model is configured in `~/.codex/config.toml`. Read this file to determine
 
 Override only when needed:
 ```bash
-codex exec -m <model-name> --sandbox read-only -o "$(mktemp /tmp/codex-bridge-XXXXXXXX.md)" "<prompt>"
+codex exec -m <model-name> --sandbox read-only -o "$(mktemp /tmp/codex-bridge-XXXXXXXX)" "<prompt>"
 ```
 
 ## Output Handling
 
-1. Always use `-o "$(mktemp /tmp/codex-bridge-XXXXXXXX.md)"` to capture output (unique path per invocation)
+1. Always use `-o "$(mktemp /tmp/codex-bridge-XXXXXXXX)"` to capture output (unique path per invocation)
 2. Read the output file with the Read tool
 3. Present results clearly labeled as **Codex output**
 4. Add Claude's own analysis when comparison is requested
