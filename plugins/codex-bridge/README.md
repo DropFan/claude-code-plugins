@@ -31,7 +31,7 @@ Run Codex code review on current changes or a specific branch/commit.
 
 ## Skill
 
-The **Codex Bridge** skill also triggers on natural language like "ask codex", "get a second opinion", "let codex review", etc.
+The **Codex Bridge** skill triggers when the user explicitly mentions "codex" — e.g., "ask codex", "let codex review", "用 codex 分析", etc.
 
 ## Usage Patterns
 

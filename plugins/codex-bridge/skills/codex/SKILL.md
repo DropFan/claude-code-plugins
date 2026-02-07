@@ -1,13 +1,13 @@
 ---
 name: Codex Bridge
 description: >
-  This skill should be used when the user asks to "use codex", "ask codex",
-  "let codex review", "get a second opinion", "compare with codex",
+  This skill should be used ONLY when the user explicitly mentions "codex" by name.
+  Trigger phrases: "use codex", "ask codex", "let codex review", "compare with codex",
   "delegate to codex", "codex review my code", "have codex check this",
   "用 codex", "让 codex 看看", "codex 审查", "codex 帮我看", "用 codex 分析",
-  "让 codex 帮忙", "交给 codex", "codex 看一下", "换 codex 看看",
-  or when cross-model verification, code review, or collaborative generation
-  with OpenAI Codex CLI is needed.
+  "让 codex 帮忙", "交给 codex", "codex 看一下", "换 codex 看看".
+  Do NOT trigger on generic phrases like "get a second opinion", "review my code",
+  or "cross-model verification" unless the user explicitly mentions "codex".
 version: 0.1.0
 ---
 

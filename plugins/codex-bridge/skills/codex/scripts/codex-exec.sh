@@ -115,6 +115,12 @@ if [[ "$MODE" == "review" ]]; then
     fi
 fi
 
+# Validate prompt for exec mode
+if [[ "$MODE" == "exec" && -z "$PROMPT" ]]; then
+    echo "ERROR: exec mode requires a prompt" >&2
+    exit 1
+fi
+
 # Build command
 CMD=(codex)
 
