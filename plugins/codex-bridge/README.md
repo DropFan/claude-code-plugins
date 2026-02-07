@@ -31,7 +31,7 @@ Run Codex code review on current changes or a specific branch/commit.
 
 ## Skill
 
-The **Codex Bridge** skill triggers when the user explicitly mentions "codex" — e.g., "ask codex", "let codex review", "用 codex 分析", etc.
+The **Codex Bridge** skill triggers when the user explicitly mentions "codex" — e.g., "ask codex", "let codex review", "用 codex 分析", etc. The skill routes to the appropriate command, which automatically collects conversation context and project state to compose a self-contained prompt for Codex — so vague references like "that function" or "the file we discussed" are resolved before reaching Codex.
 
 ## Usage Patterns
 
