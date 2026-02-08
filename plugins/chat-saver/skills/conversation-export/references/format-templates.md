@@ -1,0 +1,248 @@
+# Format Templates Reference
+
+## Markdown Template (Complete)
+
+```markdown
+# Conversation: {{topic}}
+
+**Date:** {{YYYY-MM-DD HH:MM}}
+**Project:** {{project_name}}
+**Working Directory:** {{cwd}}
+
+---
+
+## User
+
+{{user_message_1}}
+
+## Assistant
+
+{{assistant_response_1}}
+
+---
+
+## User
+
+{{user_message_2}}
+
+## Assistant
+
+{{assistant_response_2}}
+
+---
+
+> Saved with chat-saver plugin
+```
+
+## Markdown Summary Template
+
+```markdown
+# Summary: {{topic}}
+
+**Date:** {{YYYY-MM-DD HH:MM}}
+**Project:** {{project_name}}
+
+## Topic
+
+{{one_line_topic_description}}
+
+## Key Decisions
+
+- {{decision_1}}
+- {{decision_2}}
+
+## Code Changes
+
+| File | Action | Description |
+|------|--------|-------------|
+| {{file_path}} | {{created/modified/deleted}} | {{brief_description}} |
+
+## Insights
+
+- {{insight_1}}
+- {{insight_2}}
+
+## Action Items
+
+- [ ] {{action_1}}
+- [ ] {{action_2}}
+
+## Key Code Snippets
+
+### {{snippet_description}}
+
+`{{file_path}}`
+
+\`\`\`{{language}}
+{{code}}
+\`\`\`
+
+---
+
+> Summary generated with chat-saver plugin
+```
+
+## Plain Text Template
+
+```
+================================================================
+Conversation: {{topic}}
+Date: {{YYYY-MM-DD HH:MM}}
+Project: {{project_name}}
+Working Directory: {{cwd}}
+================================================================
+
+[User]
+{{user_message_1}}
+
+[Assistant]
+{{assistant_response_1}}
+
+----------------------------------------
+
+[User]
+{{user_message_2}}
+
+[Assistant]
+{{assistant_response_2}}
+
+----------------------------------------
+
+Saved with chat-saver plugin
+```
+
+## HTML Template (Complete)
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Conversation: {{topic}}</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      max-width: 800px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+      line-height: 1.6;
+      color: #333;
+    }
+    h1 {
+      font-size: 1.5rem;
+      border-bottom: 2px solid #333;
+      padding-bottom: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+    .meta {
+      color: #666;
+      font-size: 0.9em;
+      margin-bottom: 1.5rem;
+    }
+    .exchange {
+      margin: 1.5rem 0;
+      border-bottom: 1px solid #e0e0e0;
+      padding-bottom: 1.5rem;
+    }
+    .user {
+      background: #f0f4ff;
+      padding: 1rem;
+      border-radius: 8px;
+      margin: 0.5rem 0;
+    }
+    .assistant {
+      background: #f8f8f8;
+      padding: 1rem;
+      border-radius: 8px;
+      margin: 0.5rem 0;
+    }
+    .role {
+      font-weight: 600;
+      font-size: 0.85em;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.5rem;
+    }
+    .user .role { color: #2563eb; }
+    .assistant .role { color: #059669; }
+    pre {
+      background: #1e1e1e;
+      color: #d4d4d4;
+      padding: 1rem;
+      border-radius: 4px;
+      overflow-x: auto;
+      margin: 0.5rem 0;
+    }
+    code {
+      font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+      font-size: 0.9em;
+    }
+    p code {
+      background: #f0f0f0;
+      padding: 0.15em 0.3em;
+      border-radius: 3px;
+    }
+    .footer {
+      text-align: center;
+      color: #999;
+      font-size: 0.8em;
+      margin-top: 2rem;
+      padding-top: 1rem;
+      border-top: 1px solid #e0e0e0;
+    }
+  </style>
+</head>
+<body>
+  <h1>Conversation: {{topic}}</h1>
+  <p class="meta">Date: {{date}} | Project: {{project}}</p>
+
+  <div class="exchange">
+    <div class="user">
+      <div class="role">User</div>
+      {{user_content}}
+    </div>
+    <div class="assistant">
+      <div class="role">Assistant</div>
+      {{assistant_content}}
+    </div>
+  </div>
+
+  <!-- repeat .exchange for each turn -->
+
+  <div class="footer">Saved with chat-saver plugin</div>
+</body>
+</html>
+```
+
+## Content Processing Rules
+
+### Code Block Handling
+
+For Markdown format:
+- Preserve original language tags on fenced code blocks
+- Maintain indentation exactly as-is
+
+For plain text format:
+- Remove fenced code block markers
+- Indent all code lines with 4 spaces
+- Add blank line before and after code blocks
+
+For HTML format:
+- Wrap in `<pre><code class="language-{{lang}}">` tags
+- Escape `<`, `>`, `&`, `"` characters in code content
+- Preserve whitespace and indentation
+
+### Message Filtering
+
+Include:
+- All user messages (questions, instructions, feedback)
+- All assistant text responses
+- Tool output that contains meaningful results (file contents, command output)
+
+Exclude:
+- Tool call metadata (function names, parameter JSON)
+- System messages and reminders
+- Empty or purely structural messages
+- Duplicate content from retries

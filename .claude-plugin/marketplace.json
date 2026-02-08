@@ -16,6 +16,15 @@
       "author": {
         "name": "Tiger"
       }
+    },
+    {
+      "name": "chat-saver",
+      "source": "./plugins/chat-saver",
+      "description": "Save Claude Code conversations to documents in multiple formats with full or summary export",
+      "version": "0.1.0",
+      "author": {
+        "name": "Tiger"
+      }
     }
   ]
 }
