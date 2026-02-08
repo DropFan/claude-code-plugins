@@ -1,7 +1,7 @@
 ---
 name: Conversation Export
 description: This skill should be used when the user asks to "save the conversation", "export chat", "save chat history", "save our discussion", "export this conversation", "save dialogue", "save this session", "export as markdown", "export as HTML", "summarize and save", "append to chat", "continue saving", "search conversations", "find in chats", "list saved chats", "clean old chats", "export to notion", "export to feishu", "保存对话", "导出对话", "保存聊天记录", "导出聊天", "保存会话", "追加对话", "搜索对话", "查找聊天", "列出对话", "清理对话", "导出到飞书", "导出到Notion", or wants to preserve, manage, search, or export Claude Code conversations.
-version: 0.2.0
+version: 0.3.0
 ---
 
 # Conversation Export
@@ -27,7 +27,7 @@ Three output formats are supported. For complete templates with full markup, see
 
 ### Markdown (default)
 
-Use heading-based structure with `## User` / `## Assistant` sections separated by `---`. Preserve code blocks with original language tags and inline code formatting. Include metadata header with topic, date, and project name.
+Use YAML frontmatter for metadata (date, project, working directory) to ensure compatibility with tools like Obsidian, Jekyll, and Hugo. Use heading-based structure with `## User` / `## Assistant` sections separated by `---`. Preserve code blocks with original language tags and inline code formatting.
 
 ### Plain Text
 
@@ -55,6 +55,15 @@ Generate a structured summary that captures the essential value:
 6. **Key Code Snippets** — Important code blocks worth preserving (with file paths)
 
 Target length: 20-30% of the original conversation.
+
+## Selective Export
+
+In addition to scope (full/summary), support filtering by conversation range:
+
+- **Last N turns** (`--last N`) — Export only the most recent N turns
+- **From keyword** (`--from "keyword"`) — Export from the first turn containing the keyword to the end
+
+These filters apply before scope processing. A summary of the last 5 turns will first filter to 5 turns, then summarize those.
 
 ## Topic Extraction
 
