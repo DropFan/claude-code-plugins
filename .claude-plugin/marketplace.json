@@ -14,7 +14,8 @@
       "description": "Bridge OpenAI Codex CLI into Claude Code for cross-model review, verification, task delegation and collaborative generation",
       "version": "0.2.0",
       "author": {
-        "name": "Tiger"
+        "name": "Tiger",
+        "url": "https://github.com/DropFan"
       }
     },
     {
@@ -23,7 +24,8 @@
       "description": "Save, search, manage, and export Claude Code conversations to documents or external platforms",
       "version": "0.2.0",
       "author": {
-        "name": "Tiger"
+        "name": "Tiger",
+        "url": "https://github.com/DropFan"
       }
     }
   ]

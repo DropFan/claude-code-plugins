@@ -18,10 +18,12 @@ Then browse and install plugins:
 
 ## Plugins
 
-| Plugin | Description | Install | Version |
-|--------|-------------|---------|---------|
-| [codex-bridge](./plugins/codex-bridge) | Bridge OpenAI Codex CLI into Claude Code for cross-model review, verification, task delegation and collaborative generation | `/plugin install codex-bridge@tiger-plugins` | 0.2.0 |
-| [chat-saver](./plugins/chat-saver) | Save, search, manage, and export Claude Code conversations to documents or external platforms | `/plugin install chat-saver@tiger-plugins` | 0.2.0 |
+<!-- PLUGINS_TABLE_START -->
+| Plugin | Description | Author | Install | Version |
+|--------|-------------|--------|---------|---------|
+| [chat-saver](./plugins/chat-saver) | Save, search, manage, and export Claude Code conversations to documents or external platforms | [Tiger](https://github.com/DropFan) | `/plugin install chat-saver@tiger-plugins` | 0.2.0 |
+| [codex-bridge](./plugins/codex-bridge) | Bridge OpenAI Codex CLI into Claude Code for cross-model review, verification, task delegation and collaborative generation | [Tiger](https://github.com/DropFan) | `/plugin install codex-bridge@tiger-plugins` | 0.2.0 |
+<!-- PLUGINS_TABLE_END -->
 
 ## Repository Structure
 

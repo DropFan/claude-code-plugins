@@ -27,11 +27,11 @@ plugins/
 ### Adding a Self-developed Plugin
 
 1. Create a plugin directory under `plugins/`
-2. Create `.claude-plugin/plugin.json` with metadata
+2. Create `.claude-plugin/plugin.json` with metadata (this is the single source of truth)
 3. Add an entry to the `plugins` array in `marketplace.json` with a relative path as source
-4. **Update the Plugins table in the root `README.md`** (name, description, version)
+4. Run `bash scripts/sync-plugins.sh` to auto-sync metadata to `marketplace.json` and `README.md`
 
-> **Important:** When adding or modifying a plugin, always sync `marketplace.json` and the root `README.md` Plugins table to keep descriptions and versions consistent.
+> **Note:** `plugin.json` is the single source of truth for self-developed plugins. Do NOT manually edit plugin metadata in `marketplace.json` or `README.md` — run the sync script instead.
 
 ### Adding a Curated Plugin
 
@@ -58,6 +58,9 @@ Add an entry to the `plugins` array in `marketplace.json` using the GitHub sourc
   "name": "plugin-name",
   "description": "Plugin description",
   "version": "0.1.0",
-  "author": { "name": "Tiger" }
+  "author": {
+    "name": "Tiger",
+    "url": "https://github.com/DropFan"
+  }
 }
 ```
