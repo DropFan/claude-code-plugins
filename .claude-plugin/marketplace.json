@@ -20,8 +20,8 @@
     {
       "name": "chat-saver",
       "source": "./plugins/chat-saver",
-      "description": "Save Claude Code conversations to documents in multiple formats with full or summary export",
-      "version": "0.1.0",
+      "description": "Save, search, manage, and export Claude Code conversations to documents or external platforms",
+      "version": "0.2.0",
       "author": {
         "name": "Tiger"
       }

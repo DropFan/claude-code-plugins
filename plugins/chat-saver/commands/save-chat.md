@@ -1,7 +1,7 @@
 ---
-allowed-tools: Bash(pwd:*), Bash(date:*), Bash(mkdir:*), Bash(ls:*), Write, Read, AskUserQuestion
+allowed-tools: Bash(pwd:*), Bash(date:*), Bash(mkdir:*), Bash(ls:*), Write, Read, Glob, AskUserQuestion
 description: Save the current conversation to a document file
-argument-hint: "[format: md|txt|html] [scope: full|summary]"
+argument-hint: "[format: md|txt|html] [scope: full|summary] [--append]"
 ---
 
 ## Context
@@ -15,14 +15,27 @@ Save the current conversation to a document file. Parse user arguments and guide
 
 **User arguments:** $ARGUMENTS
 
+### Step 0: Load Settings
+
+1. Use the Read tool to check if `.claude/chat-saver.local.md` exists in the project root
+2. If it exists, parse the YAML frontmatter between `---` markers to extract:
+   - `default_format` — fallback format if not specified in arguments
+   - `default_scope` — fallback scope if not specified in arguments
+   - `save_dir` — output directory (default: `./chats`)
+   - `custom_header` — text to prepend to exported content
+   - `custom_footer` — text to replace the default footer
+3. If the file does not exist, silently use built-in defaults (no error)
+4. Settings are overridden by explicit command arguments
+
 ### Step 1: Parse Arguments
 
 Parse the optional arguments from $ARGUMENTS:
 
 - **format** — `md` (default), `txt`, or `html`
 - **scope** — `full` (default) or `summary`
+- **--append** — Append to an existing file instead of creating a new one
 
-If $ARGUMENTS is empty, use defaults (md, full).
+If $ARGUMENTS is empty, use defaults (md, full, no append).
 
 If arguments are ambiguous or invalid, use AskUserQuestion to let the user choose:
 
@@ -43,6 +56,16 @@ Analyze the conversation history to extract the main topic:
 2. Generate 2-4 keywords in kebab-case
 3. Prefer specific terms over generic ones (e.g., `fix-login-timeout` over `bug-fix`)
 
+### Step 2.5: Check Existing Files (Append Mode)
+
+If `--append` is set:
+
+1. Use Glob to search `<save_dir>/*-<topic>.*` for files matching the current topic
+2. If exactly one file is found, use it as the target file
+3. If multiple files match, use AskUserQuestion to let the user choose which file to append to
+4. If no matching file is found, inform the user and fall back to creating a new file (proceed to Step 3 as normal)
+5. Store the target file path for use in Step 5
+
 ### Step 3: Prepare Output
 
 1. Get the current date for the filename:
@@ -53,9 +76,9 @@ date '+%Y-%m-%d'
 2. Construct the filename: `<date>-<topic>.<ext>`
    - Extension based on format: `.md`, `.txt`, or `.html`
 
-3. Ensure the output directory exists:
+3. Ensure the output directory exists (use `save_dir` from settings, default `./chats`):
 ```bash
-mkdir -p ./chats
+mkdir -p <save_dir>
 ```
 
 4. Check for filename collision using `ls`. If the file already exists, append `-2`, `-3`, etc.
@@ -82,20 +105,39 @@ Based on the chosen scope, generate the document content:
 
 Follow the format templates from the `conversation-export` skill.
 
+**For append mode:**
+- Generate content **without** the document header (title, metadata section)
+- Prepend the format-appropriate continuation separator (see `references/format-templates.md`)
+- The separator includes the current date/time to mark the continuation point
+
 ### Step 5: Save File
 
-1. Write the generated content to `./chats/<filename>` using the Write tool
-2. Report to the user:
+1. Write the generated content to `<save_dir>/<filename>` using the Write tool
+   - If `custom_header` is set, prepend it before the main content
+   - If `custom_footer` is set, use it instead of the default "Saved with chat-saver plugin" footer
+2. **Append mode:** Read the existing target file, concatenate existing content + separator + new content, then write the combined result using the Write tool
+3. Report to the user:
    - Saved file path (absolute)
    - Format and scope used
    - File size approximation (number of lines)
+   - Whether it was a new file or an append
 
 ### Example Output
 
+**New file:**
 ```
 Conversation saved!
 
   File: ./chats/2024-01-15-auth-implementation.md
   Format: Markdown (full)
   Lines: 156
+```
+
+**Append:**
+```
+Conversation appended!
+
+  File: ./chats/2024-01-15-auth-implementation.md
+  Format: Markdown (full)
+  Lines: 89 added (total: 245)
 ```

@@ -1,7 +1,7 @@
 ---
 name: Conversation Export
-description: This skill should be used when the user asks to "save the conversation", "export chat", "save chat history", "save our discussion", "export this conversation", "save dialogue", "save this session", "export as markdown", "export as HTML", "summarize and save", "保存对话", "导出对话", "保存聊天记录", "导出聊天", "保存会话", or wants to preserve the current Claude Code conversation as a structured document in Markdown, plain text, or HTML format.
-version: 0.1.0
+description: This skill should be used when the user asks to "save the conversation", "export chat", "save chat history", "save our discussion", "export this conversation", "save dialogue", "save this session", "export as markdown", "export as HTML", "summarize and save", "append to chat", "continue saving", "search conversations", "find in chats", "list saved chats", "clean old chats", "export to notion", "export to feishu", "保存对话", "导出对话", "保存聊天记录", "导出聊天", "保存会话", "追加对话", "搜索对话", "查找聊天", "列出对话", "清理对话", "导出到飞书", "导出到Notion", or wants to preserve, manage, search, or export Claude Code conversations.
+version: 0.2.0
 ---
 
 # Conversation Export
@@ -9,6 +9,17 @@ version: 0.1.0
 ## Overview
 
 Provide the ability to export Claude Code conversation content to structured documents. Support multiple output formats (Markdown, plain text, HTML) and content scopes (full conversation, summary).
+
+## Settings Loading
+
+Before any operation, check for user settings at `.claude/chat-saver.local.md`:
+
+1. Use the Read tool to check if `.claude/chat-saver.local.md` exists
+2. If it exists, parse the YAML frontmatter to extract settings
+3. If it does not exist, silently use built-in defaults (no error)
+4. Apply priority: command arguments > settings file > built-in defaults
+
+Supported settings: `default_format`, `default_scope`, `save_dir`, `custom_header`, `custom_footer`. See `references/settings-schema.md` for full schema.
 
 ## Output Formats
 
@@ -70,16 +81,75 @@ Generate filenames in the format: `YYYY-MM-DD-<topic>.<ext>`
 
 ## Save Location
 
-Default save directory: `./chats/` relative to the current working directory.
+Default save directory: `./chats/` relative to the current working directory (configurable via `save_dir` setting).
 
-1. Check if `./chats/` exists; if not, create it
+1. Check if the save directory exists; if not, create it
 2. Check for filename collision; if exists, append counter suffix
-3. Write the file to `./chats/<filename>`
+3. Write the file to `<save_dir>/<filename>`
 4. Report the full path to the user
 
 Edge cases:
 - Empty conversation: Inform the user there is nothing to save
 - Directory creation failure: Report the error and suggest an alternative path
+
+## Append Semantics
+
+When using `--append` mode, the conversation is appended to an existing saved file instead of creating a new one:
+
+1. **File Discovery** — Use Glob to search `<save_dir>/*-<topic>.*` for matching files
+2. **Multiple Matches** — If multiple files match, use AskUserQuestion to let the user choose which file to append to
+3. **No Match** — If no existing file matches, inform the user and fall back to creating a new file
+4. **Continuation Separator** — Insert a format-appropriate separator before the appended content (see `references/format-templates.md` for separator templates)
+5. **Content Generation** — Generate content the same way as a new save, but without the document header (title, metadata)
+6. **Write Mode** — Read the existing file, concatenate separator + new content, then write the combined result
+
+## Batch Management
+
+### List Conversations
+
+Scan the save directory and display all saved conversation files in a formatted table with date, topic, format, line count, and file size. Support sorting by date, size, or name, and filtering by format. After listing, offer follow-up actions (read, search, clean).
+
+### Clean Conversations
+
+Remove old or unwanted saved files with mandatory user confirmation. Support three cleaning modes:
+- **By date** (`--before YYYY-MM-DD`) — Delete files older than a specified date
+- **Keep recent** (`--keep N`) — Retain only the N most recent files
+- **Manual selection** — Let the user pick files to delete interactively
+
+Safety rules:
+- Always confirm before deletion via AskUserQuestion
+- Delete files individually (one `rm` command per file, no wildcards)
+- Support `--dry-run` to preview without deleting
+
+## Search Behavior
+
+Search through saved conversation files using real-time Grep (no indexing). Support:
+- **Keyword search** — Case-insensitive content matching with 2 lines of context
+- **Date filtering** — Filter files by exact date (`--date`) or date range (`--from`/`--to`)
+- **Result grouping** — Display matches grouped by file with context snippets
+- **Follow-up** — After showing results, offer to read matching files in full
+
+File filtering uses filename date prefixes for date-based searches, avoiding the need to open and parse each file.
+
+## MCP Export
+
+Export conversations to external platforms via MCP (Model Context Protocol) integration. See `references/mcp-export-guide.md` for setup instructions.
+
+### Supported Platforms
+
+- **Notion** — via `@notionhq/notion-mcp-server` (stdio)
+- **Feishu (飞书)** — via local SSE-based MCP server
+
+### Export Flow
+
+1. Generate conversation content in Markdown (universal intermediate format)
+2. Check MCP server availability
+3. Create a new document on the target platform via MCP tools
+4. Return the document URL to the user
+
+### Fallback
+
+If the MCP server is not available, inform the user with setup instructions and offer to save locally instead.
 
 ## Additional Resources
 
@@ -87,3 +157,5 @@ Edge cases:
 
 For detailed format templates, content processing rules, and message filtering guidelines:
 - **`references/format-templates.md`** — Complete templates for each output format with CSS, content processing rules, and message filtering guidelines
+- **`references/settings-schema.md`** — Settings schema and configuration file format
+- **`references/mcp-export-guide.md`** — MCP export setup and usage guide for Notion and Feishu

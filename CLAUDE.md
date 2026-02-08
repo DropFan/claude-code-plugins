@@ -29,6 +29,9 @@ plugins/
 1. Create a plugin directory under `plugins/`
 2. Create `.claude-plugin/plugin.json` with metadata
 3. Add an entry to the `plugins` array in `marketplace.json` with a relative path as source
+4. **Update the Plugins table in the root `README.md`** (name, description, version)
+
+> **Important:** When adding or modifying a plugin, always sync `marketplace.json` and the root `README.md` Plugins table to keep descriptions and versions consistent.
 
 ### Adding a Curated Plugin
 

@@ -1,0 +1,91 @@
+---
+allowed-tools: Bash(pwd:*), Bash(date:*), Read, Glob, AskUserQuestion, mcp__plugin_chat-saver_notion-mcp__*, mcp__plugin_chat-saver_feishu-mcp__*
+description: Export a conversation to Notion or Feishu
+argument-hint: "<platform: notion|feishu> [scope: full|summary]"
+---
+
+## Context
+
+- Working directory: !`pwd`
+- Current date: !`date '+%Y-%m-%d %H:%M'`
+
+## Task
+
+Export the current conversation to an external platform (Notion or Feishu/飞书) via MCP integration.
+
+**User arguments:** $ARGUMENTS
+
+### Step 0: Load Settings
+
+1. Use the Read tool to check if `.claude/chat-saver.local.md` exists
+2. Extract `save_dir` and other settings as needed
+3. If the file does not exist, use defaults silently
+
+### Step 1: Parse Arguments
+
+Parse arguments from $ARGUMENTS:
+
+- **platform** (required) — `notion` or `feishu`
+- **scope** — `full` (default) or `summary`
+
+If no platform is specified, use AskUserQuestion to let the user choose:
+- **Notion** — Export to a Notion page
+- **Feishu (飞书)** — Export to a Feishu document
+
+### Step 2: Check MCP Availability
+
+Verify the target MCP server is available:
+
+- **Notion**: Check if `mcp__plugin_chat-saver_notion-mcp__*` tools are accessible
+- **Feishu**: Check if `mcp__plugin_chat-saver_feishu-mcp__*` tools are accessible
+
+If the MCP server is not available:
+1. Inform the user that the MCP server is not configured
+2. Refer them to the plugin's `.mcp.json` for setup instructions
+3. For Notion: Mention they need to set `NOTION_TOKEN` in the MCP config
+4. For Feishu: Mention they need to start the Feishu MCP SSE server
+5. Offer to save locally instead (fall back to save-chat)
+
+### Step 3: Determine Topic
+
+Same as save-chat: Analyze the conversation to extract the main topic (2-4 keywords in kebab-case).
+
+### Step 4: Generate Content
+
+Generate the conversation content in Markdown format (the universal intermediate format for MCP export):
+
+- **Full scope**: Complete conversation in Markdown
+- **Summary scope**: Structured summary in Markdown
+
+Include metadata header:
+- Title: `Conversation: <topic>`
+- Date, project name, working directory
+
+### Step 5: Export via MCP
+
+**For Notion:**
+1. Use Notion MCP tools to create a new page
+2. Set the page title to `Conversation: <topic> — <date>`
+3. Add the Markdown content as page content
+4. Return the Notion page URL
+
+**For Feishu:**
+1. Use Feishu MCP tools to create a new document
+2. Set the document title to `Conversation: <topic> — <date>`
+3. Add the Markdown content as document body
+4. Return the Feishu document URL
+
+### Step 6: Report
+
+Report the result to the user:
+
+```
+Conversation exported!
+
+  Platform: Notion
+  Title: Conversation: auth-implementation — 2024-01-15
+  URL: https://notion.so/...
+  Scope: Full
+```
+
+If export fails, provide the error message and offer to save locally instead.

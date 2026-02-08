@@ -216,6 +216,47 @@ Saved with chat-saver plugin
 </html>
 ```
 
+## Append Continuation Separators
+
+When appending to an existing file, insert the appropriate separator before the new content. The separator visually marks where a new session begins.
+
+### Markdown Continuation Separator
+
+```markdown
+
+---
+
+## Session Continued — {{YYYY-MM-DD HH:MM}}
+
+---
+
+```
+
+### Plain Text Continuation Separator
+
+```
+
+========================================
+Session Continued: {{YYYY-MM-DD HH:MM}}
+========================================
+
+```
+
+### HTML Continuation Separator
+
+```html
+<hr>
+<h2 class="continuation" style="text-align:center; color:#666; margin:2rem 0;">Session Continued — {{YYYY-MM-DD HH:MM}}</h2>
+<hr>
+```
+
+### Append Rules
+
+- Remove the original file's footer (e.g., "Saved with chat-saver plugin") before appending
+- Insert the continuation separator after the existing content
+- Append the new conversation content **without** the document header (title, date, project metadata)
+- Add the footer only once at the very end of the combined document
+
 ## Content Processing Rules
 
 ### Code Block Handling
