@@ -22,7 +22,7 @@
       "name": "chat-saver",
       "source": "./plugins/chat-saver",
       "description": "Save, search, manage, and export Claude Code conversations to documents or external platforms",
-      "version": "0.3.0",
+      "version": "0.3.1",
       "author": {
         "name": "Tiger",
         "url": "https://github.com/DropFan"
@@ -32,7 +32,7 @@
       "name": "skill-extractor",
       "source": "./plugins/skill-extractor",
       "description": "Extract reusable skills, commands, and agents from conversation history",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "author": {
         "name": "Tiger",
         "url": "https://github.com/DropFan"

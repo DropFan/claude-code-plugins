@@ -1,7 +1,7 @@
 {
   "name": "skill-extractor",
   "description": "Extract reusable skills, commands, and agents from conversation history",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "author": {
     "name": "Tiger",
     "url": "https://github.com/DropFan"

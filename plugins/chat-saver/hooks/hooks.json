@@ -7,7 +7,7 @@
         "hooks": [
           {
             "type": "prompt",
-            "prompt": "Before ending this session, evaluate whether the conversation contains valuable content worth saving (e.g., code modifications, architecture decisions, debugging insights, important discussions, or learning moments). If the conversation is trivial (simple questions, quick lookups, single-line fixes), approve stopping without comment. If the conversation contains substantial value, block stopping and suggest: 'This conversation contains valuable content. Consider saving it with `/chat-saver:save-chat` (or `/save-chat`) before ending. You can choose full export or summary. Type /chat-saver:save-chat to save, or just continue to exit.'"
+            "prompt": "If this conversation has substantial content worth saving, block and suggest `/chat-saver:save-chat`. Otherwise approve silently."
           }
         ]
       }
