@@ -50,17 +50,35 @@ for plugin_json in "$PLUGINS_DIR"/*/.claude-plugin/plugin.json; do
   author_url="$(jq -r '.author.url // empty' "$plugin_json")"
 
   # --- Step 2: Update marketplace.json ---
-  # Find the matching entry by name and update its fields
+  # If the plugin doesn't exist yet, append a new entry; otherwise update in place
+  source_path="./plugins/$plugin_name"
   MARKETPLACE_TMP="$(mktemp)"
-  jq --arg pname "$name" \
-     --arg desc "$desc" \
-     --arg ver "$version" \
-     --arg aname "$author_name" \
-     --arg aurl "$author_url" \
-    '(.plugins[] | select(.name == $pname)) |=
-      (.description = $desc | .version = $ver |
-       .author = (if $aurl != "" then {name: $aname, url: $aurl} else {name: $aname} end))' \
-    "$MARKETPLACE" > "$MARKETPLACE_TMP"
+
+  exists="$(jq --arg pname "$name" '[.plugins[] | select(.name == $pname)] | length' "$MARKETPLACE")"
+  if [[ "$exists" -eq 0 ]]; then
+    # Append new entry
+    jq --arg pname "$name" \
+       --arg src "$source_path" \
+       --arg desc "$desc" \
+       --arg ver "$version" \
+       --arg aname "$author_name" \
+       --arg aurl "$author_url" \
+      '.plugins += [{
+        name: $pname, source: $src, description: $desc, version: $ver,
+        author: (if $aurl != "" then {name: $aname, url: $aurl} else {name: $aname} end)
+      }]' "$MARKETPLACE" > "$MARKETPLACE_TMP"
+  else
+    # Update existing entry
+    jq --arg pname "$name" \
+       --arg desc "$desc" \
+       --arg ver "$version" \
+       --arg aname "$author_name" \
+       --arg aurl "$author_url" \
+      '(.plugins[] | select(.name == $pname)) |=
+        (.description = $desc | .version = $ver |
+         .author = (if $aurl != "" then {name: $aname, url: $aurl} else {name: $aname} end))' \
+      "$MARKETPLACE" > "$MARKETPLACE_TMP"
+  fi
   mv "$MARKETPLACE_TMP" "$MARKETPLACE"
 
   echo "Synced plugin '$name' to marketplace.json"

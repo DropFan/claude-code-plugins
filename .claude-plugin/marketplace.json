@@ -37,6 +37,16 @@
         "name": "Tiger",
         "url": "https://github.com/DropFan"
       }
+    },
+    {
+      "name": "update-plugins",
+      "source": "./plugins/update-plugins",
+      "description": "Batch update all installed Claude Code plugins with a single command",
+      "version": "0.1.0",
+      "author": {
+        "name": "Tiger",
+        "url": "https://github.com/DropFan"
+      }
     }
   ]
 }
