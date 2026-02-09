@@ -25,6 +25,8 @@ Supported settings: `default_format`, `default_scope`, `save_dir`, `custom_heade
 
 Three output formats are supported. For complete templates with full markup, see `references/format-templates.md`.
 
+**IMPORTANT: Every exported document MUST include the plugin attribution footer.** The footer contains the plugin name "chat-saver" and the GitHub repository link. See `references/format-templates.md` for the exact footer text per format. Do NOT omit the footer under any circumstances unless the user has configured a `custom_footer` in settings.
+
 ### Markdown (default)
 
 Use YAML frontmatter for metadata (date, project, working directory) to ensure compatibility with tools like Obsidian, Jekyll, and Hugo. Use heading-based structure with `## User` / `## Assistant` sections separated by `---`. Preserve code blocks with original language tags and inline code formatting.
@@ -151,7 +153,7 @@ Export conversations to external platforms via MCP (Model Context Protocol) inte
 
 ### Export Flow
 
-1. Generate conversation content in Markdown (universal intermediate format)
+1. Generate conversation content in Markdown (universal intermediate format), **including the mandatory plugin attribution footer**
 2. Check MCP server availability
 3. Create a new document on the target platform via MCP tools
 4. Return the document URL to the user
