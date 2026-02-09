@@ -23,6 +23,7 @@ Save, search, manage, and export Claude Code conversations.
 | `list` | List all saved files | `/list --sort date` |
 | `clean` | Remove old files | `/clean --before 2024-01-01 --dry-run` |
 | `export` | Export to Notion/Feishu | `/export notion full` |
+| `setup` | Initialize or update configuration | `/setup` |
 
 > Tip: 本地开发时用 `--plugin-dir` 加载，也可以直接用 `/save-chat`。
 
@@ -70,6 +71,13 @@ Save, search, manage, and export Claude Code conversations.
 /chat-saver:export feishu summary           # Export summary to Feishu
 ```
 
+### Setup
+
+```
+/chat-saver:setup                           # Interactive configuration wizard
+                                            # Includes optional MCP export setup
+```
+
 ## Output Formats
 
 | Format | Extension | Best For |
@@ -87,16 +95,19 @@ Save, search, manage, and export Claude Code conversations.
 
 ## Settings
 
-Create `.claude/chat-saver.local.md` in your project root to customize defaults:
+Run `/chat-saver:setup` to interactively initialize configuration, or manually create `.claude/chat-saver.local.md` in your project root:
 
 ```markdown
 ---
 default_format: md
 default_scope: full
 save_dir: ./chats
+---
+
+<!-- Advanced options (edit manually if needed):
 custom_header: ""
 custom_footer: ""
----
+-->
 ```
 
 | Setting | Default | Description |
@@ -104,25 +115,35 @@ custom_footer: ""
 | `default_format` | `md` | Default output format |
 | `default_scope` | `full` | Default content scope |
 | `save_dir` | `./chats` | Directory for saved files |
-| `custom_header` | `""` | Text prepended to exports |
-| `custom_footer` | `""` | Text replacing default footer |
+| `custom_header` | `""` | Text prepended to exports (manual edit only) |
+| `custom_footer` | `""` | Text replacing default footer (manual edit only) |
 
 Priority: command arguments > settings file > built-in defaults.
 
 ## MCP Export Setup
 
-The plugin supports exporting to external platforms via MCP servers. Configure in `.mcp.json`:
+This plugin **does not ship pre-configured MCP servers**. There are two ways to set up MCP export:
 
-### Notion
+### Option A: Use `/setup` (Recommended for new users)
+
+Run `/chat-saver:setup` and select the MCP export option. The wizard will guide you through entering your token/URL and generate the MCP configuration automatically.
+
+### Option B: Use existing MCP servers
+
+If you already have Notion or Feishu MCP servers configured in your environment (project `.mcp.json` or `~/.claude/.mcp.json`), chat-saver will **auto-detect** them — no additional setup needed.
+
+### Manual Configuration
+
+#### Notion
 
 1. Create a [Notion integration](https://www.notion.so/my-integrations) and get the token
-2. Set `NOTION_TOKEN` in `.mcp.json`
+2. Add `@notionhq/notion-mcp-server` to your `.mcp.json` with `NOTION_TOKEN`
 3. Share target pages with the integration
 
-### Feishu (飞书)
+#### Feishu (飞书)
 
-1. Start the Feishu MCP SSE server locally
-2. The default URL is `http://localhost:8090/sse`
+1. Add a Feishu/Lark MCP server to your `.mcp.json`
+2. Ensure the server is running
 
 See `skills/conversation-export/references/mcp-export-guide.md` for detailed setup.
 
@@ -156,13 +177,14 @@ To re-enable:
 chat-saver/
 ├── .claude-plugin/
 │   └── plugin.json                    # Plugin manifest
-├── .mcp.json                          # Notion + Feishu MCP config
 ├── commands/
 │   ├── save-chat.md                   # /save-chat — save conversation
+│   ├── export.md                      # /export — export to Notion/Feishu
+│   ├── setup.md                       # /setup — initialize configuration
 │   ├── search.md                      # /search — search conversations
 │   ├── list.md                        # /list — list saved files
 │   ├── clean.md                       # /clean — clean old files
-│   └── export.md                      # /export — export to Notion/Feishu
+│   └── stats.md                       # /stats — show statistics
 ├── skills/
 │   └── conversation-export/
 │       ├── SKILL.md                   # Export knowledge base

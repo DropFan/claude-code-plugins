@@ -1,6 +1,6 @@
 ---
 name: Conversation Export
-description: This skill should be used when the user asks to "save the conversation", "export chat", "save chat history", "save our discussion", "export this conversation", "save dialogue", "save this session", "export as markdown", "export as HTML", "summarize and save", "append to chat", "continue saving", "search conversations", "find in chats", "list saved chats", "clean old chats", "export to notion", "export to feishu", "保存对话", "导出对话", "保存聊天记录", "导出聊天", "保存会话", "追加对话", "搜索对话", "查找聊天", "列出对话", "清理对话", "导出到飞书", "导出到Notion", or wants to preserve, manage, search, or export Claude Code conversations.
+description: This skill should be used when the user asks to "save the conversation", "export chat", "save chat history", "save our discussion", "export this conversation", "save dialogue", "save this session", "export as markdown", "export as HTML", "summarize and save", "append to chat", "continue saving", "search conversations", "find in chats", "list saved chats", "clean old chats", "export to notion", "export to feishu", "setup chat-saver", "configure chat-saver", "initialize chat-saver", "设置 chat-saver", "配置 chat-saver", "初始化 chat-saver", "保存对话", "导出对话", "保存聊天记录", "导出聊天", "保存会话", "追加对话", "搜索对话", "查找聊天", "列出对话", "清理对话", "导出到飞书", "导出到Notion", or wants to preserve, manage, search, configure, or export Claude Code conversations.
 version: 0.3.0
 ---
 
@@ -20,6 +20,8 @@ Before any operation, check for user settings at `.claude/chat-saver.local.md`:
 4. Apply priority: command arguments > settings file > built-in defaults
 
 Supported settings: `default_format`, `default_scope`, `save_dir`, `custom_header`, `custom_footer`. See `references/settings-schema.md` for full schema.
+
+Users can run `/chat-saver:setup` to interactively initialize or update the configuration file.
 
 ## Output Formats
 
@@ -144,23 +146,23 @@ File filtering uses filename date prefixes for date-based searches, avoiding the
 
 ## MCP Export
 
-Export conversations to external platforms via MCP (Model Context Protocol) integration. See `references/mcp-export-guide.md` for setup instructions.
+Export conversations to external platforms via MCP (Model Context Protocol) integration. **This plugin does not ship its own MCP servers** — it auto-detects servers already configured in the user's environment. See `references/mcp-export-guide.md` for setup instructions.
 
 ### Supported Platforms
 
-- **Notion** — via `@notionhq/notion-mcp-server` (stdio)
-- **Feishu (飞书)** — via local SSE-based MCP server
+- **Notion** — auto-detect tools matching `mcp__*notion*`
+- **Feishu (飞书)** — auto-detect tools matching `mcp__*feishu*` or `mcp__*lark*`
 
 ### Export Flow
 
-1. Generate conversation content in Markdown (universal intermediate format), **including the mandatory plugin attribution footer**
-2. Check MCP server availability
-3. Create a new document on the target platform via MCP tools
+1. Auto-detect available MCP tools for the target platform
+2. Generate conversation content in Markdown (universal intermediate format), **including the mandatory plugin attribution footer**
+3. Create a new document on the target platform via detected MCP tools
 4. Return the document URL to the user
 
 ### Fallback
 
-If the MCP server is not available, inform the user with setup instructions and offer to save locally instead.
+If no matching MCP tools are detected, inform the user with setup instructions (add to project or global `.mcp.json`) and offer to save locally instead.
 
 ## Additional Resources
 
