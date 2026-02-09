@@ -23,6 +23,7 @@ Then browse and install plugins:
 |--------|-------------|--------|---------|---------|
 | [chat-saver](./plugins/chat-saver) | Save, search, manage, and export Claude Code conversations to documents or external platforms | [Tiger](https://github.com/DropFan) | `/plugin install chat-saver@tiger-plugins` | 0.3.0 |
 | [codex-bridge](./plugins/codex-bridge) | Bridge OpenAI Codex CLI into Claude Code for cross-model review, verification, task delegation and collaborative generation | [Tiger](https://github.com/DropFan) | `/plugin install codex-bridge@tiger-plugins` | 0.2.0 |
+| [skill-extractor](./plugins/skill-extractor) | Extract reusable skills, commands, and agents from conversation history | [Tiger](https://github.com/DropFan) | `/plugin install skill-extractor@tiger-plugins` | 0.1.0 |
 <!-- PLUGINS_TABLE_END -->
 
 ## Repository Structure

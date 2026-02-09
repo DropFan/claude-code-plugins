@@ -1,0 +1,16 @@
+{
+  "description": "Optional: Evaluate conversation for extractable patterns when session ends. Remove this file or rename to hooks.json.disabled to disable.",
+  "hooks": {
+    "Stop": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "Before ending this session, briefly evaluate whether the conversation contains reusable patterns worth extracting — such as a debugging methodology, a multi-step workflow, a code generation approach, or a review strategy that could be turned into a Skill, Command, or Agent. If the conversation is trivial (simple questions, quick lookups, single-line fixes, or routine CRUD), approve stopping without comment. If the conversation contains a valuable, reusable pattern, block stopping and suggest: 'This conversation contains a pattern that could be reused. Consider extracting it with `/skill-extractor:extract` before ending. Type /skill-extractor:extract to extract, or just continue to exit.'"
+          }
+        ]
+      }
+    ]
+  }
+}
