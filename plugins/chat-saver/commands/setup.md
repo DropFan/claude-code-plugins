@@ -43,13 +43,17 @@ Guide the user through each parameter using AskUserQuestion. Ask all 4 questions
 - `./docs/conversations` — Under docs directory
 - Custom — Let user specify a custom path
 
-**Question 4 — MCP Export:**
+**Question 4 — Stop Hook:**
+- `true` — Enable session-end suggestions (Recommended)
+- `false` — Disable — never suggest saving at session end
+
+**Question 5 — MCP Export:**
 - **Skip** — I already have MCP configured, or don't need export (Recommended)
 - **Notion** — Configure Notion export (requires API token)
 - **Feishu** — Configure Feishu/飞书 export (requires server URL)
 - **Both** — Configure both platforms
 
-When in **Update** mode, show the current value for each parameter and include it as the recommended option. For Question 4, if the plugin's `.mcp.json` already exists at `${CLAUDE_PLUGIN_ROOT}/.mcp.json`, show the currently configured platforms.
+When in **Update** mode, show the current value for each parameter and include it as the recommended option. For Question 5, if the plugin's `.mcp.json` already exists at `${CLAUDE_PLUGIN_ROOT}/.mcp.json`, show the currently configured platforms.
 
 ### Step 3: Confirm Custom Values
 
@@ -57,7 +61,7 @@ If the user chose "Custom" for save directory, use AskUserQuestion to ask them t
 
 ### Step 4: Configure MCP Export
 
-**If user chose Skip in Question 4, skip this entire step.**
+**If user chose Skip in Question 5, skip this entire step.**
 
 1. **If Notion or Both:**
    - Use AskUserQuestion to ask the user for their Notion Integration Token
@@ -115,6 +119,7 @@ mkdir -p .claude
 default_format: <selected_format>
 default_scope: <selected_scope>
 save_dir: <selected_dir>
+stop_hook: <true_or_false>
 custom_header: ""
 custom_footer: ""
 ---
@@ -135,6 +140,7 @@ chat-saver configured!
   Format: md
   Scope: full
   Save to: ./chats
+  Stop hook: enabled
 
   MCP Export: Notion ✓ (configured in plugin .mcp.json)
 
