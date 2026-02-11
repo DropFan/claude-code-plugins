@@ -1,7 +1,7 @@
 ---
 name: Conversation Export
-description: This skill should be used when the user asks to "save the conversation", "export chat", "save chat history", "save our discussion", "export this conversation", "save dialogue", "save this session", "export as markdown", "export as HTML", "summarize and save", "append to chat", "continue saving", "search conversations", "find in chats", "list saved chats", "clean old chats", "export to notion", "export to feishu", "setup chat-saver", "configure chat-saver", "initialize chat-saver", "设置 chat-saver", "配置 chat-saver", "初始化 chat-saver", "保存对话", "导出对话", "保存聊天记录", "导出聊天", "保存会话", "追加对话", "搜索对话", "查找聊天", "列出对话", "清理对话", "导出到飞书", "导出到Notion", or wants to preserve, manage, search, configure, or export Claude Code conversations.
-version: 0.3.0
+description: This skill should be used when the user asks to "save the conversation", "export chat", "save chat history", "save our discussion", "export this conversation", "save dialogue", "save this session", "export as markdown", "export as HTML", "summarize and save", "append to chat", "continue saving", "search conversations", "find in chats", "list saved chats", "clean old chats", "export to notion", "export to feishu", "setup chat-saver", "configure chat-saver", "initialize chat-saver", "raw export", "export raw data", "export JSONL", "export session data", "export session file", "设置 chat-saver", "配置 chat-saver", "初始化 chat-saver", "保存对话", "导出对话", "保存聊天记录", "导出聊天", "保存会话", "追加对话", "搜索对话", "查找聊天", "列出对话", "清理对话", "导出到飞书", "导出到Notion", "导出原始数据", "原始导出", "导出 JSONL", "导出 session", "导出会话数据", or wants to preserve, manage, search, configure, or export Claude Code conversations.
+version: 0.4.0
 ---
 
 # Conversation Export
@@ -163,6 +163,22 @@ Export conversations to external platforms via MCP (Model Context Protocol) inte
 ### Fallback
 
 If no matching MCP tools are detected, inform the user with setup instructions (add to project or global `.mcp.json`) and offer to save locally instead.
+
+## Raw Export
+
+Raw export reads conversation data directly from Claude Code's JSONL session files via bash/jq, bypassing the model entirely. This guarantees **complete and faithful** data export — no content is lost or rewritten.
+
+**When to use raw export vs save-chat:**
+
+| | `/raw-export` | `/save-chat` |
+|---|---|---|
+| Data source | JSONL session file | Model memory |
+| Completeness | 100% of records | Limited by context window |
+| Accuracy | Exact original data | May be rephrased |
+| Content | Raw messages + tool calls | Curated conversation |
+| Best for | Archiving, debugging, long sessions | Readable documentation, summaries |
+
+Use `/chat-saver:raw-export` to invoke. Supports `--format` (md/html/jsonl/json), `--full` (include all record types), `--list` (browse sessions), and `--session <id>` (target specific session).
 
 ## Additional Resources
 

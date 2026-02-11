@@ -22,7 +22,7 @@
       "name": "chat-saver",
       "source": "./plugins/chat-saver",
       "description": "Save, search, manage, and export Claude Code conversations to documents or external platforms",
-      "version": "0.4.0",
+      "version": "0.5.0",
       "author": {
         "name": "Tiger",
         "url": "https://github.com/DropFan"
