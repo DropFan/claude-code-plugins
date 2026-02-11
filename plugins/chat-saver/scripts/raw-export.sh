@@ -79,16 +79,16 @@ if $LIST_MODE; then
     IDX=$((IDX + 1))
     BASENAME=$(basename "$f" .jsonl)
     TOTAL=$(wc -l < "$f" | tr -d ' ')
-    TIMESTAMP=$(jq -r 'select(.type == "user") | .timestamp // empty' "$f" 2>/dev/null | head -1 || true)
+    TIMESTAMP=$(jq -r 'limit(1; select(.type == "user") | .timestamp // empty)' "$f" 2>/dev/null || true)
     DATE_STR="${TIMESTAMP:0:16}"
     # Get first user text message (truncated)
-    FIRST_MSG=$(jq -r '
+    FIRST_MSG=$(jq -r 'limit(1;
       select(.type == "user") |
       if (.message.content | type) == "string" then .message.content
       elif (.message.content | type) == "array" then
         [.message.content[] | select(.type == "text") | .text] | first // "[tool result]"
       else empty end
-    ' "$f" 2>/dev/null | head -1 | cut -c1-60 || true)
+    ) | split("\n") | first | .[0:60]' "$f" 2>/dev/null || true)
     # Escape pipes for table
     FIRST_MSG=$(echo "$FIRST_MSG" | tr '|' '/')
     if [[ ${#FIRST_MSG} -ge 60 ]]; then
@@ -161,7 +161,7 @@ export_json() {
 
 export_md() {
   SESSION_ID=$(basename "$JSONL_FILE" .jsonl)
-  FIRST_TS=$(jq -r 'select(.timestamp) | .timestamp' "$JSONL_FILE" 2>/dev/null | head -1)
+  FIRST_TS=$(jq -r 'limit(1; select(.timestamp) | .timestamp)' "$JSONL_FILE" 2>/dev/null || true)
   DATE_STR="${FIRST_TS:0:16}"
 
   # Write jq filter to temp file to avoid bash escaping issues
@@ -267,7 +267,7 @@ JQFILTER
 
 export_html() {
   SESSION_ID=$(basename "$JSONL_FILE" .jsonl)
-  FIRST_TS=$(jq -r 'select(.timestamp) | .timestamp' "$JSONL_FILE" 2>/dev/null | head -1)
+  FIRST_TS=$(jq -r 'limit(1; select(.timestamp) | .timestamp)' "$JSONL_FILE" 2>/dev/null || true)
   DATE_STR="${FIRST_TS:0:16}"
 
   # Write jq filter to temp file to avoid bash escaping issues
