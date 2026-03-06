@@ -8,7 +8,7 @@ description: >
   "让 codex 帮忙", "交给 codex", "codex 看一下", "换 codex 看看".
   Do NOT trigger on generic phrases like "get a second opinion", "review my code",
   "cross-model verification", "帮我看看代码", "再检查一下" unless the user explicitly mentions "codex".
-version: 0.2.0
+version: 0.3.0
 ---
 
 # Codex Bridge
