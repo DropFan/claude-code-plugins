@@ -1,5 +1,5 @@
 ---
-allowed-tools: Bash(pwd:*), Bash(codex review:*), Bash(codex --version:*), Bash(git status:*), Bash(git diff:*), Bash(git log:*), Bash(git show:*), Bash(git branch:*), Bash(git rev-parse:*), Read
+allowed-tools: Bash(pwd:*), Bash(codex review:*), Bash(codex --version:*), Bash(git status:*), Bash(git diff:*), Bash(git log:*), Bash(git show:*), Bash(git branch:*), Bash(git rev-parse:*), Bash(wc:*), Read
 description: Run OpenAI Codex code review on current changes or a specific branch/commit
 argument-hint: "[branch | commit-sha | review instructions]"
 ---
@@ -13,71 +13,154 @@ argument-hint: "[branch | commit-sha | review instructions]"
 
 ## Task
 
-Run Codex CLI code review with conversation-aware context enrichment.
+Run Codex CLI code review with deep context enrichment and structured analysis.
 
 **User arguments:** $ARGUMENTS
 
 ### Pre-checks
 
-1. If Codex is not installed (version shows "NOT INSTALLED"), tell the user to install it with `npm install -g @openai/codex` and stop.
-2. If not in a git repo (branch shows "NOT A GIT REPO"), tell the user this command requires a git repository and stop.
+1. If Codex is not installed (version shows "NOT INSTALLED"), tell the user to install it with `npm install -g @openai/codex` and configure with `codex login`. Stop here.
+2. If not in a git repo (branch shows "NOT A GIT REPO"), tell the user this command requires a git repository. Stop here.
+3. If uncommitted changes is empty AND ($ARGUMENTS is empty OR $ARGUMENTS is `uncommitted`), tell the user there are no uncommitted changes and suggest specifying a branch or commit SHA (e.g., `/codex-bridge:codex-review main`). Stop here.
 
 ### Step 1: Determine Review Scope
 
 Parse $ARGUMENTS to decide the review mode. When ambiguous, **verify with git** before deciding:
 
 ```bash
-git branch --list "$ARGUMENTS"                        # non-empty output → branch
+git branch --list "$ARGUMENTS" 2>/dev/null               # non-empty → branch
 git rev-parse --verify "$ARGUMENTS^{commit}" 2>/dev/null  # success → valid commit
 ```
 
-| $ARGUMENTS | Command |
-|-----------|---------|
-| Empty or `uncommitted` | `codex review --uncommitted` |
-| Verified as a branch name | `codex review --base $ARGUMENTS` |
-| Verified as a commit SHA | `codex review --commit $ARGUMENTS` |
-| Contains natural language instructions | Compose enriched prompt (see Step 2), then `codex review "<enriched prompt>"` |
+| $ARGUMENTS | Mode | Base Command |
+|-----------|------|-------------|
+| Empty or `uncommitted` | Uncommitted changes | `codex review --uncommitted` |
+| Verified as a branch name | Branch diff | `codex review --base $ARGUMENTS` |
+| Verified as a commit SHA | Single commit | `codex review --commit $ARGUMENTS` |
+| Contains natural language | Guided review | `codex review "<enriched prompt>"` |
 
-> **Note:** Codex CLI does not allow `--uncommitted` and `[PROMPT]` together. When custom instructions are provided, pass them as the positional argument without `--uncommitted` — Codex defaults to reviewing uncommitted changes.
+> **Important:** Codex CLI does not allow `--uncommitted` and `[PROMPT]` together. When providing custom instructions, pass them as the positional argument only — Codex defaults to reviewing uncommitted changes when no scope flag is given.
 
-### Step 2: Enrich with Conversation Context
+### Step 2: Collect Deep Context
 
-Before running Codex, gather context from two sources:
+Gather context from three sources to build a thorough review prompt.
 
-**A. Git context** (always collect):
-- For uncommitted: run `git diff --stat` to see affected files
-- For branch: run `git diff --stat $ARGUMENTS...HEAD` to see the delta
-- For commit: run `git show --stat $ARGUMENTS` to see the commit scope
+**A. Diff scope assessment** (always do this first):
 
-**B. Conversation context** (collect when available):
-- If the user discussed specific files or features in this conversation, note them as **review focus areas**
-- If the user mentioned specific concerns (performance, security, error handling), include them as review priorities
-- If the user recently worked on specific code with Claude, identify those files in the diff
+| Mode | Command |
+|------|---------|
+| Uncommitted | `git diff --stat` and `git diff --cached --stat` |
+| Branch | `git diff --stat $ARGUMENTS...HEAD` |
+| Commit | `git show --stat $ARGUMENTS` |
 
-**Compose enriched prompt** (when $ARGUMENTS contains natural language OR conversation context adds value):
+Count the total changed lines using the **same scope** as the review mode:
 
-Combine the user's instructions with conversation focus areas into a single review prompt:
+| Mode | Count command |
+|------|--------------|
+| Uncommitted | `git diff --stat \| tail -1` (combine with `git diff --cached --stat \| tail -1` for staged) |
+| Branch | `git diff --stat $ARGUMENTS...HEAD \| tail -1` |
+| Commit | `git show --stat $ARGUMENTS \| tail -1` |
+
+**B. Diff content collection** (scale strategy by diff size):
+
+Provide Codex enough actual code context to review meaningfully without exceeding token limits.
+
+- **Small diff (< 200 lines changed):** Collect full diff content.
+- **Medium diff (200–500 lines):** Collect diff for the most important files. Prioritize:
+  1. Files discussed in the current conversation
+  2. Files with logic changes (not just renames/formatting)
+  3. Core source files over test/config files
+- **Large diff (> 500 lines):** Collect only `--stat` summary + diff of 3-5 most critical files. Tell Codex which files were included and which were skipped so it knows the review is partial.
+
+**C. Conversation context** (when relevant):
+
+Scan the conversation history for:
+- **Specific files or functions** the user discussed → mark as review focus areas
+- **Specific concerns** the user raised (performance, security, error handling, concurrency) → include as review priorities
+- **Design decisions** made during the conversation → include so Codex can evaluate implementation against intent
+
+If the conversation has no relevant prior context, skip this section — the defaults ("none") in the prompt template are sufficient.
+
+### Step 3: Compose Review Prompt
+
+For **guided review** mode (natural language in $ARGUMENTS) or when conversation context adds value, compose an enriched prompt:
+
 ```
-<user's review instructions or "Review all changes">
+Review the following changes with focus on code quality and correctness.
 
-Focus areas from conversation context:
-- <file or concern discussed in conversation>
-- <specific aspect the user cares about>
+User's specific instructions:
+<user's review instructions, or "No specific instructions — do a thorough general review">
 
-Files in scope: <list from git diff --stat>
+Review dimensions (evaluate each that applies):
+1. Correctness: Logic errors, off-by-one, null/undefined handling, race conditions
+2. Error handling: Missing error checks, swallowed errors, unhelpful error messages
+3. Security: Input validation, injection risks, auth/authz gaps, secret exposure
+4. Design: Naming clarity, single responsibility, coupling, abstraction level
+5. Edge cases: Empty inputs, boundary values, concurrent access, large inputs
+
+Conversation context:
+- Focus files: <files discussed in conversation, or "none">
+- Known concerns: <user's stated concerns, or "none">
+- Design intent: <relevant design decisions, or "none">
+
+Changed files summary:
+<output of git diff --stat>
+
+Diff content:
+<actual diff content, trimmed per Step 2 size strategy>
+
+Output format:
+For each finding, provide:
+- Severity (critical / warning / suggestion)
+- File and line reference
+- What the issue is
+- Why it matters
+- Suggested fix (if applicable)
+
+Group findings by file. Start with a 2-3 sentence executive summary.
 ```
 
-Only enrich when context is genuinely relevant. Do not pad the prompt with generic instructions.
+Skip enrichment when $ARGUMENTS resolved to a branch or commit (not natural language) AND the conversation has no relevant context (no files discussed, no concerns raised) — Codex's built-in review is sufficient for these cases. Otherwise, always enrich.
 
-### Step 3: Run Codex Review
+### Step 4: Execute Codex Review
 
-Execute the determined command from Step 1. Codex review writes output directly to stdout.
+Build the final command by combining the scope from Step 1 with the enriched prompt from Step 3 (if composed):
 
-### Step 4: Present Results
+- **No enrichment:** Run the base command as-is (e.g., `codex review --uncommitted`).
+- **With enrichment + uncommitted mode:** `codex review "<enriched prompt>"` (no `--uncommitted` flag — Codex defaults to uncommitted when no scope flag is given, and `--uncommitted` cannot be combined with a prompt).
+- **With enrichment + branch mode:** `codex review --base $ARGUMENTS "<enriched prompt>"`
+- **With enrichment + commit mode:** `codex review --commit $ARGUMENTS "<enriched prompt>"`
 
-1. Show Codex's review findings as-is, labeled as **Codex Review**
-2. After Codex output, add a **Claude's Notes** section:
-   - Relate Codex findings to the ongoing conversation — e.g., "Codex flagged X, which aligns with the concern you raised earlier about Y"
-   - Highlight any findings where Claude agrees or disagrees based on deeper context
-   - Flag anything Codex may have missed that Claude knows from the conversation (e.g., a design decision that explains seemingly odd code)
-   - Keep this concise — 3-5 bullet points max
+Codex review writes output directly to stdout.
+
+If Codex exits with a non-zero code:
+- **Exit 127 / "command not found":** Codex is not in PATH. Suggest reinstalling.
+- **Exit 1 with "API" in error:** Likely an API key or quota issue. Suggest `codex login`.
+- **Exit 124/143 (timeout):** Review is taking too long due to a large diff. Suggest narrowing the scope.
+- **Other errors:** Show the error output and suggest checking `codex --version`.
+
+### Step 5: Present Results
+
+Structure the output clearly:
+
+```markdown
+## Codex Review
+
+<Codex's review output, preserved as-is>
+
+## Claude's Analysis
+
+### Conversation Context
+<Relate Codex findings to what was discussed in the conversation. Connect the dots between review findings and the user's earlier work or concerns.>
+
+### Additional Findings
+<Things Codex missed that Claude knows from conversation context or deeper codebase knowledge. Only include if genuinely adding value — if Codex covered everything well, say so and skip this section.>
+
+### Action Items
+<Prioritized list combining Codex findings and Claude's analysis:>
+1. **[critical]** <issue> — <file:line if applicable>
+2. **[warning]** <issue> — <file:line if applicable>
+3. **[suggestion]** <issue>
+```
+
+If Codex's review is thorough and Claude has nothing meaningful to add, keep the Claude section brief — a single paragraph acknowledging the review quality and highlighting the top action item is enough.

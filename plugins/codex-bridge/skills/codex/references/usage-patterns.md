@@ -74,7 +74,7 @@ codex exec --sandbox read-only -o /tmp/codex-bridge-XXXXXXXX \
 
 ## Pattern C: Task Delegation
 
-> **Safety:** `workspace-write` is NOT auto-approved by `/codex-bridge:codex` command. These examples require direct Bash calls, which will prompt for manual user approval. Never use `danger-full-access` or `--dangerously-bypass-approvals-and-sandbox`.
+> **Safety:** `workspace-write` cannot be executed through the `/codex-bridge:codex` command (its `allowed-tools` only permits `read-only`). These examples require running commands directly in the terminal or via `codex-exec.sh`. Never use `danger-full-access` or `--dangerously-bypass-approvals-and-sandbox`.
 
 ### Analyze Then Implement (Two-Step)
 
@@ -111,7 +111,7 @@ codex exec --sandbox workspace-write -C <project-dir> \
 
 ## Pattern D: Collaborative Generation
 
-> **Safety:** Same as Pattern C — all `workspace-write` operations require manual user approval. Never use `danger-full-access` or `--dangerously-bypass-approvals-and-sandbox`.
+> **Safety:** Same as Pattern C — `workspace-write` requires running via terminal or `codex-exec.sh`, not through the `/codex-bridge:codex` command. Never use `danger-full-access` or `--dangerously-bypass-approvals-and-sandbox`.
 
 ### Workflow: Claude Designs, Codex Implements
 

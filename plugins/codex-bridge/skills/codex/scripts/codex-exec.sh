@@ -159,7 +159,7 @@ else
     # Bash-based timeout fallback (macOS without coreutils)
     "${CMD[@]}" &
     CMD_PID=$!
-    ( sleep "$TIMEOUT" && kill "$CMD_PID" 2>/dev/null ) &
+    ( sleep "$TIMEOUT" && kill -0 "$CMD_PID" 2>/dev/null && kill "$CMD_PID" 2>/dev/null ) &
     WATCHER_PID=$!
     wait "$CMD_PID" || EXIT_CODE=$?
     kill "$WATCHER_PID" 2>/dev/null
@@ -168,6 +168,11 @@ fi
 
 if [[ $EXIT_CODE -eq 124 || $EXIT_CODE -eq 143 ]]; then
     echo "ERROR: Codex timed out after ${TIMEOUT}s" >&2
+fi
+
+# Handle empty output
+if [[ -n "$OUTPUT_FILE" && -f "$OUTPUT_FILE" && ! -s "$OUTPUT_FILE" ]]; then
+    echo "WARNING: Codex produced no output" >&2
 fi
 
 # If output file was used, print its path

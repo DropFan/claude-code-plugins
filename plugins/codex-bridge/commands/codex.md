@@ -17,8 +17,8 @@ Act as an orchestration layer: understand the user's intent, gather relevant con
 
 ### Step 1: Pre-checks
 
-1. If Codex is not installed (version shows "NOT INSTALLED"), tell the user to install it with `npm install -g @openai/codex` and stop.
-2. If $ARGUMENTS is blank, ask the user what they want Codex to do. Do not proceed with an empty prompt.
+1. If Codex is not installed (version shows "NOT INSTALLED"), tell the user: "Codex CLI is not installed. Run `npm install -g @openai/codex` to install, then `codex login` to configure your API key." Stop here.
+2. If $ARGUMENTS is blank, ask the user what they want Codex to do. Provide 2-3 example prompts based on the current project context (e.g., files recently discussed). Do not proceed with an empty prompt.
 
 ### Step 2: Understand Intent
 
@@ -69,7 +69,7 @@ Refer to `references/usage-patterns.md` for prompt templates matching the task t
 
 ### Step 5: Execute
 
-1. Read default model from `~/.codex/config.toml` (extract model name).
+1. Try to read the default model from `~/.codex/config.toml` (extract the `model` value). If the file is missing or unreadable, use "default" as the model label — this is not a blocking error since Codex has its own fallback.
 2. Generate unique output path:
 ```bash
 mktemp /tmp/codex-bridge-XXXXXXXX
@@ -80,16 +80,22 @@ codex exec --sandbox read-only -o "<path>" "<composed prompt>"
 ```
 4. Read the output file using the Read tool.
 
+**Error handling:**
+- If Codex exits with code 127 ("command not found"), suggest reinstalling with `npm install -g @openai/codex`.
+- If Codex exits with code 1 and error contains "API" or "auth", suggest running `codex login` to configure the API key.
+- If the output file is empty, tell the user that Codex produced no output and suggest trying a more specific prompt.
+- For other non-zero exits, show the error and suggest the user verify with `codex --version`.
+
 ### Step 6: Analyze and Present
 
 Present results in this format:
 
-```
-### Codex Response (model: <model from config>)
+```markdown
+## Codex Response (model: <model from config or "default">)
 
 <contents of Codex output>
 
-### Claude's Analysis
+## Claude's Analysis
 
 <Claude's additional observations based on conversation context>
 ```
