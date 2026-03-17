@@ -17,12 +17,7 @@ Export the current conversation to an external platform (Notion or Feishu/飞书
 
 ### Step 0: Load Settings
 
-1. Use the Read tool to check if `.claude/chat-saver.local.md` exists
-2. If it exists, parse the YAML frontmatter between `---` markers to extract:
-   - `default_scope` — fallback scope if not specified in arguments
-   - `save_dir` — used as fallback save location if MCP export fails
-   - `custom_footer` — custom footer text (replaces default plugin attribution)
-3. If the file does not exist, use defaults silently
+Load settings from `.claude/chat-saver.local.md` following `references/settings-loading.md`. Extract: `default_scope`, `save_dir`, `custom_footer`.
 
 ### Step 1: Parse Arguments
 

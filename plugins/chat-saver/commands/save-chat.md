@@ -1,13 +1,14 @@
 ---
-allowed-tools: Bash(pwd:*), Bash(date:*), Bash(mkdir:*), Bash(ls:*), Write, Read, Glob, AskUserQuestion
+allowed-tools: Bash(pwd:*), Bash(date:*), Bash(mkdir:*), Bash(ls:*), Bash(${CLAUDE_PLUGIN_ROOT}/scripts/raw-export.sh:*), Write, Read, Glob, AskUserQuestion
 description: Save the current conversation to a document file
-argument-hint: "[format: md|txt|html] [scope: full|summary] [--append] [--last N] [--from \"keyword\"]"
+argument-hint: "[format: md|txt|html] [scope: full|summary] [--append] [--last N] [--from \"keyword\"] [--raw]"
 ---
 
 ## Context
 
 - Working directory: !`pwd`
 - Current date: !`date '+%Y-%m-%d %H:%M'`
+- Plugin root: ${CLAUDE_PLUGIN_ROOT}
 
 ## Task
 
@@ -17,15 +18,7 @@ Save the current conversation to a document file. Parse user arguments and guide
 
 ### Step 0: Load Settings
 
-1. Use the Read tool to check if `.claude/chat-saver.local.md` exists in the project root
-2. If it exists, parse the YAML frontmatter between `---` markers to extract:
-   - `default_format` — fallback format if not specified in arguments
-   - `default_scope` — fallback scope if not specified in arguments
-   - `save_dir` — output directory (default: `./chats`)
-   - `custom_header` — text to prepend to exported content
-   - `custom_footer` — text to replace the default footer
-3. If the file does not exist, silently use built-in defaults (no error)
-4. Settings are overridden by explicit command arguments
+Load settings from `.claude/chat-saver.local.md` following `references/settings-loading.md`. Extract: `default_format`, `default_scope`, `save_dir`, `custom_header`, `custom_footer`.
 
 ### Step 1: Parse Arguments
 
@@ -36,8 +29,9 @@ Parse the optional arguments from $ARGUMENTS:
 - **--append** — Append to an existing file instead of creating a new one
 - **--last N** — Only save the last N conversation turns (each User + Assistant pair = 1 turn)
 - **--from "keyword"** — Save from the first turn containing the keyword to the end
+- **--raw** — Use JSONL session file as data source instead of model memory (ensures 100% complete export, recommended for long conversations)
 
-If $ARGUMENTS is empty, use defaults (md, full, no append).
+If $ARGUMENTS is empty, use defaults (md, full, no append, no raw).
 
 If arguments are ambiguous or invalid, use AskUserQuestion to let the user choose:
 
@@ -70,13 +64,44 @@ If `--last` or `--from` is specified, filter the conversation before processing:
 
 The filtered conversation is used for all subsequent steps (topic extraction, content generation, etc.).
 
-### Step 2: Determine Topic
+### Step 1.8: Raw Mode — Locate Session File
 
-Analyze the conversation history to extract the main topic:
+**Skip this step if `--raw` is not set.**
 
+When `--raw` is specified, the data source switches from model memory to the JSONL session file. This guarantees 100% data completeness — no content is lost due to context window compression.
+
+1. Get the current working directory and encode the path:
+```bash
+CWD=$(pwd)
+ENCODED=$(echo "$CWD" | sed 's|^/||' | sed 's|/|-|g')
+```
+
+2. Find the current session's JSONL file (most recently modified):
+```bash
+ls -t ~/.claude/projects/-${ENCODED}/*.jsonl | head -1
+```
+
+3. If no JSONL file is found, inform the user and fall back to normal (non-raw) mode.
+
+4. Store the JSONL file path — it will be used in Step 4 instead of model memory.
+
+**Note:** `--raw` mode ignores `--last` and `--from` filters (these require model-based content access). If both `--raw` and a filter are specified, inform the user that filters are not supported in raw mode and ask whether to proceed with raw (complete) or filtered (from memory).
+
+### Step 2: Determine Topic and Tags
+
+Analyze the conversation history to extract the main topic and classification tags:
+
+**Topic:**
 1. Identify the primary task or subject discussed
 2. Generate 2-4 keywords in kebab-case
 3. Prefer specific terms over generic ones (e.g., `fix-login-timeout` over `bug-fix`)
+
+**Tags:**
+1. Identify 2-5 classification tags for the conversation
+2. Tags should be lowercase, single-word or hyphenated (e.g., `auth`, `bug-fix`, `frontend`, `refactor`)
+3. Prefer domain-specific tags over generic ones
+4. Common tag categories: technology (`react`, `python`), activity (`debug`, `review`, `design`), domain (`auth`, `payment`, `api`)
+5. Tags will be included in the document metadata (YAML frontmatter, HTML meta, or plain text header) — see `references/format-templates.md`
 
 ### Step 2.5: Check Existing Files (Append Mode)
 
@@ -109,14 +134,37 @@ mkdir -p <save_dir>
 
 Based on the chosen scope, generate the document content. **You MUST read `references/format-templates.md` from the `conversation-export` skill and strictly follow the templates** — including header metadata, content structure, and the footer.
 
-**For `full` scope:**
+**If `--raw` mode (full scope):**
+
+Use the raw-export script to generate content directly from the JSONL session file:
+```bash
+bash "${CLAUDE_PLUGIN_ROOT}/scripts/raw-export.sh" \
+  --format <fmt> \
+  --output "<save_dir>/<filename>" \
+  [--footer "<custom_footer>"] \
+  "<jsonl-file>"
+```
+The script handles all formatting. Skip to Step 5 after running (the script writes the file directly).
+
+**If `--raw` mode (summary scope):**
+
+1. First, export the raw data to a temporary markdown file:
+```bash
+bash "${CLAUDE_PLUGIN_ROOT}/scripts/raw-export.sh" \
+  --format md --output /tmp/chat-saver-raw-tmp.md "<jsonl-file>"
+```
+2. Read the temporary file to get the full conversation content
+3. Generate a structured summary from the raw content (same summary format as below)
+4. Delete the temporary file
+
+**For `full` scope (non-raw):**
 - Export the entire conversation in the selected format
 - Include all user messages and assistant responses
 - Preserve code blocks with language tags
 - Omit internal tool call metadata (tool names, parameters)
 - Include meaningful tool output (file contents, command results)
 
-**For `summary` scope:**
+**For `summary` scope (non-raw):**
 - Generate a structured summary containing:
   - **Topic** — One-line description
   - **Key Decisions** — Bullet list of decisions made

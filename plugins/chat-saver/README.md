@@ -19,6 +19,7 @@ Save, search, manage, and export Claude Code conversations.
 | Command | Description | Example |
 |---------|-------------|---------|
 | `save-chat` | Save conversation to a file | `/save-chat md summary --append` |
+| `raw-export` | Export raw data from JSONL session files | `/raw-export --format html --list` |
 | `search` | Search saved conversations | `/search auth --from 2024-01-01` |
 | `list` | List all saved files | `/list --sort date` |
 | `clean` | Remove old files | `/clean --before 2024-01-01 --dry-run` |
@@ -37,6 +38,16 @@ Save, search, manage, and export Claude Code conversations.
 /chat-saver:save-chat html full             # Save full conversation as HTML
 /chat-saver:save-chat txt                   # Save as plain text
 /chat-saver:save-chat md full --append      # Append to existing file
+/chat-saver:save-chat md full --raw         # Use raw JSONL data (100% complete)
+```
+
+### Raw Export
+
+```
+/chat-saver:raw-export                      # Export current session as Markdown
+/chat-saver:raw-export --format html        # Export as styled HTML
+/chat-saver:raw-export --list               # Browse and pick a session
+/chat-saver:raw-export --format jsonl --full # Export all records as JSONL
 ```
 
 ### Search
@@ -45,6 +56,8 @@ Save, search, manage, and export Claude Code conversations.
 /chat-saver:search auth                     # Search for "auth" in all files
 /chat-saver:search "login bug" --date 2024-01-15    # Search on specific date
 /chat-saver:search api --from 2024-01-01 --to 2024-01-31  # Date range
+/chat-saver:search --tag debug              # List all files tagged "debug"
+/chat-saver:search auth --tag backend       # Search "auth" in backend-tagged files
 ```
 
 ### List
@@ -102,6 +115,8 @@ Run `/chat-saver:setup` to interactively initialize configuration, or manually c
 default_format: md
 default_scope: full
 save_dir: ./chats
+stop_hook: true
+stop_hook_threshold: 50
 ---
 
 <!-- Advanced options (edit manually if needed):
@@ -115,6 +130,8 @@ custom_footer: ""
 | `default_format` | `md` | Default output format |
 | `default_scope` | `full` | Default content scope |
 | `save_dir` | `./chats` | Directory for saved files |
+| `stop_hook` | `true` | Enable session-end save suggestions |
+| `stop_hook_threshold` | `50` | Score threshold for save suggestions (higher = less frequent) |
 | `custom_header` | `""` | Text prepended to exports (manual edit only) |
 | `custom_footer` | `""` | Text replacing default footer (manual edit only) |
 
@@ -179,17 +196,21 @@ chat-saver/
 │   └── plugin.json                    # Plugin manifest
 ├── commands/
 │   ├── save-chat.md                   # /save-chat — save conversation
+│   ├── raw-export.md                  # /raw-export — export raw JSONL data
 │   ├── export.md                      # /export — export to Notion/Feishu
 │   ├── setup.md                       # /setup — initialize configuration
 │   ├── search.md                      # /search — search conversations
 │   ├── list.md                        # /list — list saved files
 │   ├── clean.md                       # /clean — clean old files
 │   └── stats.md                       # /stats — show statistics
+├── scripts/
+│   └── raw-export.sh                  # Raw JSONL export script (bash/jq)
 ├── skills/
 │   └── conversation-export/
 │       ├── SKILL.md                   # Export knowledge base
 │       └── references/
 │           ├── format-templates.md    # Format templates + append separators
+│           ├── settings-loading.md    # Shared settings loading procedure
 │           ├── settings-schema.md     # Settings configuration schema
 │           └── mcp-export-guide.md    # MCP export setup guide
 ├── hooks/

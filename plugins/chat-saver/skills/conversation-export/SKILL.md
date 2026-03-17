@@ -1,7 +1,7 @@
 ---
 name: Conversation Export
 description: This skill should be used when the user asks to "save the conversation", "export chat", "save chat history", "save our discussion", "export this conversation", "save dialogue", "save this session", "export as markdown", "export as HTML", "summarize and save", "append to chat", "continue saving", "search conversations", "find in chats", "list saved chats", "clean old chats", "export to notion", "export to feishu", "setup chat-saver", "configure chat-saver", "initialize chat-saver", "raw export", "export raw data", "export JSONL", "export session data", "export session file", "设置 chat-saver", "配置 chat-saver", "初始化 chat-saver", "保存对话", "导出对话", "保存聊天记录", "导出聊天", "保存会话", "追加对话", "搜索对话", "查找聊天", "列出对话", "清理对话", "导出到飞书", "导出到Notion", "导出原始数据", "原始导出", "导出 JSONL", "导出 session", "导出会话数据", or wants to preserve, manage, search, configure, or export Claude Code conversations.
-version: 0.4.0
+version: 0.5.1
 ---
 
 # Conversation Export
@@ -12,14 +12,9 @@ Provide the ability to export Claude Code conversation content to structured doc
 
 ## Settings Loading
 
-Before any operation, check for user settings at `.claude/chat-saver.local.md`:
+Before any operation, load user settings from `.claude/chat-saver.local.md` following `references/settings-loading.md`.
 
-1. Use the Read tool to check if `.claude/chat-saver.local.md` exists
-2. If it exists, parse the YAML frontmatter to extract settings
-3. If it does not exist, silently use built-in defaults (no error)
-4. Apply priority: command arguments > settings file > built-in defaults
-
-Supported settings: `default_format`, `default_scope`, `save_dir`, `custom_header`, `custom_footer`. See `references/settings-schema.md` for full schema.
+Supported settings: `default_format`, `default_scope`, `save_dir`, `stop_hook`, `stop_hook_threshold`, `custom_header`, `custom_footer`. See `references/settings-schema.md` for full schema.
 
 Users can run `/chat-saver:setup` to interactively initialize or update the configuration file.
 
@@ -186,5 +181,6 @@ Use `/chat-saver:raw-export` to invoke. Supports `--format` (md/html/jsonl/json)
 
 For detailed format templates, content processing rules, and message filtering guidelines:
 - **`references/format-templates.md`** — Complete templates for each output format with CSS, content processing rules, and message filtering guidelines
+- **`references/settings-loading.md`** — Shared settings loading procedure used by all commands
 - **`references/settings-schema.md`** — Settings schema and configuration file format
 - **`references/mcp-export-guide.md`** — MCP export setup and usage guide for Notion and Feishu

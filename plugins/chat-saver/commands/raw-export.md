@@ -1,5 +1,5 @@
 ---
-allowed-tools: Bash(pwd:*), Bash(date:*), Bash(mkdir:*), Bash(ls:*), Bash(bash:*), Bash(wc:*), Bash(du:*), Write, Read, Glob, AskUserQuestion
+allowed-tools: Bash(pwd:*), Bash(date:*), Bash(mkdir:*), Bash(ls:*), Bash(${CLAUDE_PLUGIN_ROOT}/scripts/raw-export.sh:*), Bash(wc:*), Bash(du:*), Write, Read, Glob, AskUserQuestion
 description: Export raw conversation data directly from JSONL session files
 argument-hint: "[--format jsonl|json|md|html] [--full] [--list] [--session <id>]"
 ---
@@ -18,13 +18,7 @@ Export raw conversation data directly from Claude Code's JSONL session files. Un
 
 ### Step 0: Load Settings
 
-1. Use the Read tool to check if `.claude/chat-saver.local.md` exists in the project root
-2. If it exists, parse the YAML frontmatter between `---` markers to extract:
-   - `save_dir` — output directory (default: `./chats`)
-   - `default_format` — fallback format if not specified in arguments (default: `md`)
-   - `custom_footer` — custom footer text (replaces default)
-3. If the file does not exist, silently use built-in defaults (no error)
-4. Settings are overridden by explicit command arguments
+Load settings from `.claude/chat-saver.local.md` following `references/settings-loading.md`. Extract: `save_dir`, `default_format`, `custom_footer`.
 
 ### Step 1: Parse Arguments
 

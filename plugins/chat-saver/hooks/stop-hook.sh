@@ -10,12 +10,18 @@ if [ "$(echo "$INPUT" | jq -r '.stop_hook_active // false')" = "true" ]; then
   exit 0
 fi
 
-# Check user config: stop_hook enabled?
+# Check user config: stop_hook enabled? threshold?
 CWD=$(echo "$INPUT" | jq -r '.cwd // ""')
+THRESHOLD=50
 if [ -n "$CWD" ] && [ -f "$CWD/.claude/chat-saver.local.md" ]; then
-  HOOK_ENABLED=$(sed -n '/^---$/,/^---$/p' "$CWD/.claude/chat-saver.local.md" | grep '^stop_hook:' | awk '{print $2}')
+  FRONTMATTER=$(sed -n '/^---$/,/^---$/p' "$CWD/.claude/chat-saver.local.md")
+  HOOK_ENABLED=$(echo "$FRONTMATTER" | grep '^stop_hook:' | awk '{print $2}')
   if [ "$HOOK_ENABLED" = "false" ]; then
     exit 0
+  fi
+  USER_THRESHOLD=$(echo "$FRONTMATTER" | grep '^stop_hook_threshold:' | awk '{print $2}')
+  if [ -n "$USER_THRESHOLD" ] && [ "$USER_THRESHOLD" -gt 0 ] 2>/dev/null; then
+    THRESHOLD=$USER_THRESHOLD
   fi
 fi
 
@@ -51,13 +57,17 @@ BC=$(echo "$TOOL_DATA" | grep -c '^Bash$')
 
 SCORE=$(( UT * 2 + WE * 5 + TC * 3 + BC * 1 ))
 
-if [ "$SCORE" -le 50 ]; then
+if [ "$SCORE" -le "$THRESHOLD" ]; then
   exit 0
 fi
 
 # Build contextual message from actual session activity
 FILE_NAMES=$(echo "$TOOL_DATA" | grep '^FILE:' | sed 's/^FILE://' | sort -u)
-FILE_COUNT=$(echo "$FILE_NAMES" | grep -c '.')
+if [ -n "$FILE_NAMES" ]; then
+  FILE_COUNT=$(echo "$FILE_NAMES" | wc -l | tr -d ' ')
+else
+  FILE_COUNT=0
+fi
 
 if [ "$FILE_COUNT" -gt 0 ]; then
   # Show up to 2 unique filenames

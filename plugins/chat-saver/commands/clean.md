@@ -17,9 +17,7 @@ Clean up old or unwanted saved conversation files with user confirmation.
 
 ### Step 0: Load Settings
 
-1. Use the Read tool to check if `.claude/chat-saver.local.md` exists
-2. Extract `save_dir` (default: `./chats`)
-3. If the file does not exist, use defaults silently
+Load settings from `.claude/chat-saver.local.md` following `references/settings-loading.md`. Extract: `save_dir`.
 
 ### Step 1: Parse Arguments
 

@@ -14,6 +14,8 @@ Initialize or update the chat-saver settings file (`.claude/chat-saver.local.md`
 
 ### Step 1: Check Existing Configuration
 
+See `references/settings-loading.md` for the full field schema.
+
 1. Use the Read tool to check if `.claude/chat-saver.local.md` exists in the project root
 2. **If it exists:**
    - Parse and display the current settings in a readable table format
@@ -27,7 +29,7 @@ Initialize or update the chat-saver settings file (`.claude/chat-saver.local.md`
 
 ### Step 2: Configure Parameters
 
-Guide the user through each parameter using AskUserQuestion. Ask all 4 questions in a **single** AskUserQuestion call.
+Guide the user through each parameter using AskUserQuestion. Ask all 5 questions in a **single** AskUserQuestion call.
 
 **Question 1 — Default Format:**
 - `md` — Markdown, preserves code blocks and formatting (Recommended)
@@ -120,6 +122,7 @@ default_format: <selected_format>
 default_scope: <selected_scope>
 save_dir: <selected_dir>
 stop_hook: <true_or_false>
+stop_hook_threshold: 50
 custom_header: ""
 custom_footer: ""
 ---
@@ -127,6 +130,7 @@ custom_footer: ""
 
 **Rules:**
 - **Always write ALL fields** into the YAML frontmatter, even if they match defaults — this makes the configuration explicit and self-documenting
+- `stop_hook_threshold` is always written as `50` (default) — users can adjust manually later
 - `custom_header` and `custom_footer` are always written as `""` — users can edit them manually later
 
 ### Step 6: Report

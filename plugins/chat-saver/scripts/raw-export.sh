@@ -120,6 +120,12 @@ if [[ -z "$OUTPUT_FILE" ]]; then
   exit 1
 fi
 
+# ── Temp file cleanup ────────────────────────────────────────────────
+
+TMPFILES=()
+cleanup() { rm -f "${TMPFILES[@]}"; }
+trap cleanup EXIT
+
 # ── jq filter: extract text from messages ─────────────────────────────
 
 # Build the jq filter based on mode
@@ -164,15 +170,15 @@ export_md() {
   FIRST_TS=$(jq -r 'limit(1; select(.timestamp) | .timestamp)' "$JSONL_FILE" 2>/dev/null || true)
   DATE_STR="${FIRST_TS:0:16}"
 
-  # Write jq filter to temp file to avoid bash escaping issues
+  # Write jq filter to temp file (unquoted heredoc expands $TYPE_FILTER)
   local JQ_FILTER
   JQ_FILTER=$(mktemp)
-  trap "rm -f '$JQ_FILTER'" RETURN
+  TMPFILES+=("$JQ_FILTER")
 
-  cat > "$JQ_FILTER" <<'JQFILTER'
-select(TYPEFILTER) |
+  cat > "$JQ_FILTER" <<JQFILTER
+select($TYPE_FILTER) |
 if .type == "user" then
-  "---\n\n## User\n\n" + (
+  "---\\n\\n## User\\n\\n" + (
     if (.message.content | type) == "string" then
       .message.content
     elif (.message.content | type) == "array" then
@@ -181,20 +187,20 @@ if .type == "user" then
         elif .type == "tool_result" then
           "> **[Tool Output]** " + (
             if (.content | type) == "string" then
-              (.content | split("\n") | first | .[0:200])
+              (.content | split("\\n") | first | .[0:200])
             elif (.content | type) == "array" then
-              ([.content[] | select(.type == "text") | .text] | first // "[result]") | split("\n") | first | .[0:200]
+              ([.content[] | select(.type == "text") | .text] | first // "[result]") | split("\\n") | first | .[0:200]
             else "[result]"
             end
           )
         else empty
         end
-      ] | join("\n\n")
+      ] | join("\\n\\n")
     else "[unknown content]"
     end
-  ) + "\n"
+  ) + "\\n"
 elif .type == "assistant" then
-  "---\n\n## Assistant\n\n" + (
+  "---\\n\\n## Assistant\\n\\n" + (
     [.message.content[] |
       if .type == "text" then .text
       elif .type == "tool_use" then
@@ -202,7 +208,7 @@ elif .type == "assistant" then
           if .name == "Read" then (.input.file_path // "")
           elif .name == "Write" then (.input.file_path // "")
           elif .name == "Edit" then (.input.file_path // "")
-          elif .name == "Bash" then (.input.command // "" | split("\n") | first | .[0:100])
+          elif .name == "Bash" then (.input.command // "" | split("\\n") | first | .[0:100])
           elif .name == "Glob" then (.input.pattern // "")
           elif .name == "Grep" then (.input.pattern // "")
           elif .name == "Task" then (.input.description // "")
@@ -213,21 +219,14 @@ elif .type == "assistant" then
       elif .type == "thinking" then empty
       else empty
       end
-    ] | join("\n\n")
-  ) + "\n"
+    ] | join("\\n\\n")
+  ) + "\\n"
 elif .type == "progress" then
-  "> _[progress: " + (.timestamp // "?") + "]_\n"
+  "> _[progress: " + (.timestamp // "?") + "]_\\n"
 else
-  "> _[" + .type + "]_\n"
+  "> _[" + .type + "]_\\n"
 end
 JQFILTER
-
-  # Replace TYPEFILTER placeholder with actual filter
-  if $FULL_MODE; then
-    sed -i '' 's/TYPEFILTER/true/' "$JQ_FILTER"
-  else
-    sed -i '' 's/TYPEFILTER/.type == "user" or .type == "assistant"/' "$JQ_FILTER"
-  fi
 
   {
     # YAML frontmatter
@@ -270,25 +269,25 @@ export_html() {
   FIRST_TS=$(jq -r 'limit(1; select(.timestamp) | .timestamp)' "$JSONL_FILE" 2>/dev/null || true)
   DATE_STR="${FIRST_TS:0:16}"
 
-  # Write jq filter to temp file to avoid bash escaping issues
+  # Write jq filter to temp file (unquoted heredoc expands $TYPE_FILTER)
   local JQ_FILTER
   JQ_FILTER=$(mktemp)
-  trap "rm -f '$JQ_FILTER'" RETURN
+  TMPFILES+=("$JQ_FILTER")
 
-  cat > "$JQ_FILTER" <<'JQFILTER'
-select(TYPEFILTER) |
+  cat > "$JQ_FILTER" <<JQFILTER
+select($TYPE_FILTER) |
 
 def html_escape: gsub("&"; "&amp;") | gsub("<"; "&lt;") | gsub(">"; "&gt;");
 
 if .type == "user" then
-  "<div class=\"exchange\"><div class=\"user\"><div class=\"role\">User</div><div class=\"content\">" + (
+  "<div class=\\"exchange\\"><div class=\\"user\\"><div class=\\"role\\">User</div><div class=\\"content\\">" + (
     if (.message.content | type) == "string" then
       (.message.content | html_escape)
     elif (.message.content | type) == "array" then
       [.message.content[] |
         if .type == "text" then (.text | html_escape)
         elif .type == "tool_result" then
-          "<div class=\"tool-output\">" + (
+          "<div class=\\"tool-output\\">" + (
             if (.content | type) == "string" then (.content | html_escape | .[0:500])
             elif (.content | type) == "array" then
               ([.content[] | select(.type == "text") | (.text | html_escape)] | first // "[result]") | .[0:500]
@@ -302,15 +301,15 @@ if .type == "user" then
     end
   ) + "</div></div>"
 elif .type == "assistant" then
-  "<div class=\"assistant\"><div class=\"role\">Assistant</div><div class=\"content\">" + (
+  "<div class=\\"assistant\\"><div class=\\"role\\">Assistant</div><div class=\\"content\\">" + (
     [.message.content[] |
       if .type == "text" then (.text | html_escape)
       elif .type == "tool_use" then
-        "<div class=\"tool-call\">[" + .name + "] " + (
+        "<div class=\\"tool-call\\">[" + .name + "] " + (
           if .name == "Read" then (.input.file_path // "" | html_escape)
           elif .name == "Write" then (.input.file_path // "" | html_escape)
           elif .name == "Edit" then (.input.file_path // "" | html_escape)
-          elif .name == "Bash" then (.input.command // "" | split("\n") | first | .[0:100] | html_escape)
+          elif .name == "Bash" then (.input.command // "" | split("\\n") | first | .[0:100] | html_escape)
           elif .name == "Glob" then (.input.pattern // "" | html_escape)
           elif .name == "Grep" then (.input.pattern // "" | html_escape)
           else (.input | tostring | .[0:100] | html_escape)
@@ -326,13 +325,6 @@ elif .type == "progress" then
 else empty
 end
 JQFILTER
-
-  # Replace TYPEFILTER placeholder with actual filter
-  if $FULL_MODE; then
-    sed -i '' 's/TYPEFILTER/true/' "$JQ_FILTER"
-  else
-    sed -i '' 's/TYPEFILTER/.type == "user" or .type == "assistant"/' "$JQ_FILTER"
-  fi
 
   {
     cat <<HTMLHEAD

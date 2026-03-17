@@ -8,6 +8,7 @@ title: "Conversation: {{topic}}"
 date: {{YYYY-MM-DD HH:MM}}
 project: {{project_name}}
 working_directory: {{cwd}}
+tags: [{{tag1}}, {{tag2}}, ...]
 generator: chat-saver
 ---
 
@@ -46,6 +47,7 @@ title: "Summary: {{topic}}"
 date: {{YYYY-MM-DD HH:MM}}
 project: {{project_name}}
 scope: summary
+tags: [{{tag1}}, {{tag2}}, ...]
 generator: chat-saver
 ---
 
@@ -99,6 +101,7 @@ Conversation: {{topic}}
 Date: {{YYYY-MM-DD HH:MM}}
 Project: {{project_name}}
 Working Directory: {{cwd}}
+Tags: {{tag1}}, {{tag2}}, ...
 ================================================================
 
 [User]
@@ -131,6 +134,7 @@ https://github.com/DropFan/claude-code-plugins/tree/master/plugins/chat-saver
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="generator" content="chat-saver plugin for Claude Code">
   <meta name="repository" content="https://github.com/DropFan/claude-code-plugins">
+  <meta name="keywords" content="{{tag1}}, {{tag2}}, ...">
   <title>Conversation: {{topic}}</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
