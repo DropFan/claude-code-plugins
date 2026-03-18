@@ -1,5 +1,5 @@
 ---
-allowed-tools: Bash(pwd:*), Bash(date:*), Bash(mkdir:*), Bash(ls:*), Write, Read, Glob, AskUserQuestion
+allowed-tools: Bash(pwd:*), Bash(date:*), Bash(mkdir -p:*), Bash(ls:*), Bash(test:*), Write, Read, Glob, AskUserQuestion
 description: Analyze conversation history and extract reusable skills, commands, or agents
 argument-hint: "[type: skill|command|agent|auto] [--name <component-name>]"
 ---
@@ -26,7 +26,11 @@ Analyze the current conversation history and extract reusable patterns into Clau
 
 ### Step 1: Analyze Conversation History
 
-Scan the complete conversation history and identify extractable patterns. Look for:
+Scan the conversation history and identify extractable patterns.
+
+**For long conversations:** If the conversation history exceeds the available context window, focus on the most recent exchanges first, as they are most likely to contain the pattern the user wants to extract. If early parts of the conversation were truncated or not analyzed, inform the user: "Note: Only the most recent portion of the conversation was analyzed. If the pattern you want to extract is from earlier in the conversation, please describe it."
+
+Look for:
 
 **Potential Skills** (methodology / technique):
 - A debugging approach that involved multiple analysis steps
@@ -52,6 +56,16 @@ For each identified pattern, produce a candidate with:
 - **Type suggestion** — Skill, Command, or Agent
 - **Summary** — 1-2 sentence description of what the pattern does
 - **Key content** — The core steps, logic, or methodology to preserve
+
+**Sensitive data filtering:** When extracting key content from the conversation, actively remove or replace:
+- API keys, tokens, passwords, and secrets (patterns: `sk-*`, `ghp_*`, `Bearer *`, `token:*`, `password:*`)
+- Internal URLs, IP addresses, and hostnames
+- Personal file paths containing usernames (replace with `<username>` or `$HOME`)
+- Database connection strings
+- Email addresses and phone numbers
+- Any data that looks like credentials or PII
+
+Replace removed values with descriptive placeholders (e.g., `<your-api-key>`, `<your-database-url>`).
 
 If no extractable patterns are found, inform the user and exit gracefully.
 
@@ -85,6 +99,12 @@ Use AskUserQuestion to let the user choose where to save:
 - **Plugin directory** — A specific plugin's directory (for plugin development)
 
 If the user chooses "Plugin directory", ask for the plugin path or auto-detect from the current working directory.
+
+**Path validation:** Before proceeding with any save location, verify:
+1. The resolved path does not contain `..` segments (reject path traversal attempts)
+2. The path is under one of: the user's home directory (`$HOME`), the current working directory, or a recognized Claude config directory (`~/.claude/`)
+3. The path does not point to system directories (`/etc`, `/usr`, `/var`, `/bin`, `/sbin`, `/System`, `/Library`)
+If validation fails, inform the user why the path was rejected and ask for a corrected path.
 
 ### Step 3: Generate Component File
 
@@ -204,7 +224,7 @@ Display the complete generated file content to the user for review. Show:
 Use AskUserQuestion to confirm:
 - **Save as-is** — Write the file
 - **Edit first** — Let the user suggest modifications, then regenerate
-- **Cancel** — Abort without saving
+- **Cancel** — Abort without saving. No files or directories will be created. Inform the user that the extraction was cancelled and they can re-run `/skill-extractor:extract` to try again later.
 
 **4c: Write file**
 
@@ -217,10 +237,17 @@ Use AskUserQuestion to confirm:
    ```bash
    mkdir -p <parent_directory>
    ```
+   If `mkdir -p` fails (non-zero exit code), inform the user with the specific error (e.g., "Permission denied" or "Read-only file system") and ask for an alternative save path. Do not proceed to writing.
 
-3. Check if the file already exists. If so, warn and ask whether to overwrite.
+3. Verify the target directory is writable:
+   ```bash
+   [ -w <parent_directory> ] && echo "OK" || echo "NOT WRITABLE"
+   ```
+   If the directory is not writable, inform the user and ask for an alternative path.
 
-4. Write the file using the Write tool.
+4. Check if the file already exists. If so, warn and ask whether to overwrite.
+
+5. Write the file using the Write tool.
 
 **4d: Report**
 
