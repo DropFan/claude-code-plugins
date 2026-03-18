@@ -12,7 +12,7 @@
       "name": "codex-bridge",
       "source": "./plugins/codex-bridge",
       "description": "Bridge OpenAI Codex CLI into Claude Code for cross-model review, verification, task delegation and collaborative generation",
-      "version": "0.3.0",
+      "version": "0.3.1",
       "author": {
         "name": "Tiger",
         "url": "https://github.com/DropFan"
@@ -32,7 +32,7 @@
       "name": "skill-extractor",
       "source": "./plugins/skill-extractor",
       "description": "Extract reusable skills, commands, and agents from conversation history",
-      "version": "0.1.1",
+      "version": "0.1.2",
       "author": {
         "name": "Tiger",
         "url": "https://github.com/DropFan"
