@@ -5,5 +5,7 @@
   "author": {
     "name": "Tiger",
     "url": "https://github.com/DropFan"
-  }
+  },
+  "keywords": ["codex", "openai", "code-review", "cross-model"],
+  "license": "MIT"
 }

@@ -4,6 +4,7 @@ description: Run a prompt through OpenAI Codex CLI and return the result
 argument-hint: "<prompt to send to Codex>"
 ---
 
+<!-- Dynamic context: bang-backtick (!`) runs command at load time to inject runtime values -->
 ## Context
 
 - Working directory: !`pwd`
@@ -69,7 +70,11 @@ Refer to `references/usage-patterns.md` for prompt templates matching the task t
 
 ### Step 5: Execute
 
-1. Try to read the default model from `~/.codex/config.toml` (extract the `model` value). If the file is missing or unreadable, use "default" as the model label — this is not a blocking error since Codex has its own fallback.
+1. Read the user's Codex config to determine the default model:
+   ```bash
+   grep '^model' ~/.codex/config.toml 2>/dev/null | head -1 | sed 's/.*= *"\?\([^"]*\)"\?/\1/'
+   ```
+   If the file doesn't exist or the model key is not found (command output is empty), use "default" as the model label — this is not a blocking error since Codex has its own fallback.
 2. Generate unique output path:
 ```bash
 mktemp /tmp/codex-bridge-XXXXXXXX
@@ -78,6 +83,7 @@ mktemp /tmp/codex-bridge-XXXXXXXX
 ```bash
 codex exec --sandbox read-only -o "<path>" "<composed prompt>"
 ```
+**Security note:** The `/codex-bridge:codex` command's `allowed-tools` only permits `--sandbox read-only`. If the composed prompt attempts to override the sandbox mode (e.g., by injecting `--sandbox workspace-write` into the command), Codex will still run in read-only mode because the `allowed-tools` pattern only matches commands starting with `codex exec --sandbox read-only`.
 4. Read the output file using the Read tool.
 
 **Error handling:**

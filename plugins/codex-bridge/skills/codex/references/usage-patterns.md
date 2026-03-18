@@ -74,7 +74,7 @@ codex exec --sandbox read-only -o /tmp/codex-bridge-XXXXXXXX \
 
 ## Pattern C: Task Delegation
 
-> **Safety:** `workspace-write` cannot be executed through the `/codex-bridge:codex` command (its `allowed-tools` only permits `read-only`). These examples require running commands directly in the terminal or via `codex-exec.sh`. Never use `danger-full-access` or `--dangerously-bypass-approvals-and-sandbox`.
+> **Important: Terminal-only patterns.** The examples below use `--sandbox workspace-write`, which CANNOT be executed through the `/codex-bridge:codex` command (its `allowed-tools` only permits `read-only`). These must be run directly in the terminal or via `codex-exec.sh`. The SKILL.md routing will NOT attempt these patterns — they are reference material for advanced terminal usage only.
 
 ### Analyze Then Implement (Two-Step)
 
@@ -111,7 +111,7 @@ codex exec --sandbox workspace-write -C <project-dir> \
 
 ## Pattern D: Collaborative Generation
 
-> **Safety:** Same as Pattern C — `workspace-write` requires running via terminal or `codex-exec.sh`, not through the `/codex-bridge:codex` command. Never use `danger-full-access` or `--dangerously-bypass-approvals-and-sandbox`.
+> **Important: Terminal-only patterns.** The examples below use `--sandbox workspace-write`, which CANNOT be executed through the `/codex-bridge:codex` command (its `allowed-tools` only permits `read-only`). These must be run directly in the terminal or via `codex-exec.sh`. The SKILL.md routing will NOT attempt these patterns — they are reference material for advanced terminal usage only.
 
 ### Workflow: Claude Designs, Codex Implements
 
