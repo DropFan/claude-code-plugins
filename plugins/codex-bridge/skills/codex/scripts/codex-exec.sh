@@ -35,6 +35,10 @@ Options:
   --commit SHA           (review mode) Review specific commit
   --title TITLE          (review mode) Commit/PR title for context
   -h, --help             Show this help
+
+The prompt MUST be quoted to prevent shell expansion of special characters.
+Use -- to separate options from the prompt:
+  codex-exec.sh --mode exec -- "Analyze $(pwd) codebase"
 USAGE
     exit 0
 }
@@ -58,8 +62,21 @@ while [[ $# -gt 0 ]]; do
         --base|--commit|--title)
             require_arg $# "$1"; EXTRA_ARGS+=("$1" "$2"); shift 2 ;;
         -h|--help)      usage ;;
-        --)             shift; PROMPT="$*"; break ;;
+        --)  shift
+             for arg in "$@"; do
+                 if [[ -z "$PROMPT" ]]; then
+                     PROMPT="$arg"
+                 else
+                     PROMPT="$PROMPT $arg"
+                 fi
+             done
+             break ;;
         -*)             echo "Unknown option: $1" >&2; exit 1 ;;
+        # Positional args: each $1 is already individually quoted by the shell.
+        # When calling this script, always quote the prompt:
+        #   codex-exec.sh "my prompt here"
+        # or use -- separator:
+        #   codex-exec.sh --mode exec -- "my prompt here"
         *)
             if [[ -z "$PROMPT" ]]; then
                 PROMPT="$1"
@@ -90,7 +107,12 @@ fi
 
 # Validate --output path (must resolve to /tmp/ or /private/tmp/ after canonicalization)
 if [[ -n "$OUTPUT_FILE" ]]; then
-    RESOLVED_OUTPUT="$(cd "$(dirname "$OUTPUT_FILE")" 2>/dev/null && pwd -P)/$(basename "$OUTPUT_FILE")" || true
+    OUTPUT_DIR="$(cd "$(dirname "$OUTPUT_FILE")" 2>/dev/null && pwd -P)" || true
+    if [[ -z "$OUTPUT_DIR" ]]; then
+        echo "ERROR: --output directory does not exist: $(dirname "$OUTPUT_FILE")" >&2
+        exit 1
+    fi
+    RESOLVED_OUTPUT="$OUTPUT_DIR/$(basename "$OUTPUT_FILE")"
     if [[ "$RESOLVED_OUTPUT" != /tmp/* && "$RESOLVED_OUTPUT" != /private/tmp/* ]]; then
         echo "ERROR: --output path must resolve to /tmp/, got '$OUTPUT_FILE' (resolved: '$RESOLVED_OUTPUT')" >&2
         exit 1
@@ -106,8 +128,13 @@ fi
 # Validate review mode: check mutually exclusive scope flags
 if [[ "$MODE" == "review" ]]; then
     SCOPE_COUNT=0
+    SKIP_NEXT=false
     for arg in "${EXTRA_ARGS[@]}"; do
-        case "$arg" in --uncommitted|--base|--commit) SCOPE_COUNT=$((SCOPE_COUNT + 1)) ;; esac
+        if $SKIP_NEXT; then SKIP_NEXT=false; continue; fi
+        case "$arg" in
+            --uncommitted) SCOPE_COUNT=$((SCOPE_COUNT + 1)) ;;
+            --base|--commit) SCOPE_COUNT=$((SCOPE_COUNT + 1)); SKIP_NEXT=true ;;
+        esac
     done
     if [[ $SCOPE_COUNT -gt 1 ]]; then
         echo "ERROR: --uncommitted, --base, and --commit are mutually exclusive" >&2
@@ -159,9 +186,17 @@ else
     # Bash-based timeout fallback (macOS without coreutils)
     "${CMD[@]}" &
     CMD_PID=$!
-    ( sleep "$TIMEOUT" && kill -0 "$CMD_PID" 2>/dev/null && kill "$CMD_PID" 2>/dev/null ) &
+    (
+        sleep "$TIMEOUT" &
+        SLEEP_PID=$!
+        # Clean up sleep when watcher is killed (main process finished)
+        trap 'kill "$SLEEP_PID" 2>/dev/null; exit 0' TERM
+        wait "$SLEEP_PID" 2>/dev/null
+        # Timeout reached: send SIGTERM for graceful shutdown
+        kill -TERM "$CMD_PID" 2>/dev/null
+    ) &
     WATCHER_PID=$!
-    wait "$CMD_PID" || EXIT_CODE=$?
+    wait "$CMD_PID" 2>/dev/null || EXIT_CODE=$?
     kill "$WATCHER_PID" 2>/dev/null
     wait "$WATCHER_PID" 2>/dev/null
 fi
