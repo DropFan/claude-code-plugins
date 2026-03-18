@@ -16,3 +16,6 @@ __pycache__/
 *.local.*
 .env
 .env.*
+
+# Planning docs (local-only)
+.planning/
