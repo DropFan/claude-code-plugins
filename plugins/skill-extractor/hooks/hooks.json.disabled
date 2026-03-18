@@ -1,5 +1,5 @@
 {
-  "description": "Optional: Evaluate conversation for extractable patterns when session ends. Remove this file or rename to hooks.json.disabled to disable.",
+  "description": "Evaluate conversation for extractable patterns when session ends. Rename to hooks.json to enable.",
   "hooks": {
     "Stop": [
       {

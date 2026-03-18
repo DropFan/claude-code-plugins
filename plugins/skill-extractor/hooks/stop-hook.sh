@@ -2,6 +2,8 @@
 # Skill-extractor stop hook: suggest extracting patterns from methodology-rich conversations
 # Parses transcript JSONL for structural signals and generates contextual messages
 # Respects stop_hook setting in .claude/skill-extractor.local.md
+# Note: Do NOT use set -e — hooks must always exit cleanly (fail-safe).
+# Individual command failures are handled via default values below.
 
 INPUT=$(cat)
 
@@ -44,11 +46,17 @@ TOOL_DATA=$(jq -r '
       end
     else empty end
   else empty end
-' "$TRANSCRIPT" 2>/dev/null)
+' "$TRANSCRIPT" 2>/tmp/skill-extractor-jq-err)
+JQ_EXIT=$?
 
-UT=$(echo "$TOOL_DATA" | grep -c '^USER$')
-WE=$(echo "$TOOL_DATA" | grep -cE '^(CREATED|EDITED):')
-TC=$(echo "$TOOL_DATA" | grep -c '^Task$')
+# If jq failed and file is non-trivial, likely a parse error — exit silently
+if [ "$JQ_EXIT" -ne 0 ] && [ "${FILE_SIZE:-0}" -gt 10240 ]; then
+  exit 0
+fi
+
+UT=$(echo "$TOOL_DATA" | grep -c '^USER$' || echo 0)
+WE=$(echo "$TOOL_DATA" | grep -cE '^(CREATED|EDITED):' || echo 0)
+TC=$(echo "$TOOL_DATA" | grep -c '^Task$' || echo 0)
 
 # Extractable patterns need code output + complexity
 SCORE=$(( UT * 1 + WE * 5 + TC * 4 ))
@@ -79,5 +87,7 @@ else
   MSG="Methodology-rich session"
 fi
 
+# Claude Code hook protocol: exit 2 = block and show message.
+# Message is sent to stderr per Claude Code convention for hook output.
 echo "${MSG} — consider \`/skill-extractor:extract\`" >&2
 exit 2

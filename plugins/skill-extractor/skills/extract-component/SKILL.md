@@ -1,7 +1,6 @@
 ---
 name: Extract Component
-description: This skill should be used when the user asks to "extract skill", "extract a skill", "save as skill", "create skill from conversation", "extract command", "generate command", "save as command", "extract agent", "generate agent", "save as agent", "extract pattern", "extract reusable pattern", "summarize as skill", "turn this into a skill", "make this a command", "package this as", "save this workflow", "distill this pattern", "提取技能", "提炼模式", "总结为 skill", "保存为技能", "生成 command", "生成命令", "提取为命令", "提取 agent", "生成 agent", "保存为 agent", "把这个变成技能", "把这个提炼出来", "保存这个工作流", "提取可复用模式", or wants to extract reusable components (skills, commands, agents) from the current conversation history.
-version: 0.1.0
+description: This skill should be used when the user asks to "extract skill", "extract command", "extract agent", "extract pattern", "save as skill", "save as command", "save as agent", "turn this into a skill", "make this a command", "save this workflow", "提取技能", "提取命令", "提取 agent", "保存为技能", "提取可复用模式", or wants to extract reusable components (skills, commands, agents) from the current conversation history.
 ---
 
 # Extract Component
