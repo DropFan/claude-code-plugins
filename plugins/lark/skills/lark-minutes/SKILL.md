@@ -1,7 +1,7 @@
 ---
 name: lark-minutes
 version: 1.0.0
-description: "飞书妙记：妙记相关基本功能。1.查询妙记列表（按关键词/所有者/参与者/时间范围）；2.获取妙记基础信息（标题、封面、时长 等）；3.下载妙记音视频文件；4.获取妙记相关 AI 产物（总结、待办、章节）；5.上传音视频生成妙记，也支持将本地音视频文件转成纪要、逐字稿、文字稿、撰写文字等产物。遇到这类请求时，应优先使用本 skill，而不是尝试 `ffmpeg`、`whisper` 等本地转写命令。飞书妙记 URL 格式: http(s)://<host>/minutes/<minute-token>"
+description: "飞书妙记：妙记相关基本功能。1.查询妙记列表（按关键词/所有者/参与者/时间范围）；2.获取妙记基础信息（标题、封面、时长 等）；3.下载妙记音视频文件；4.获取妙记相关 AI 产物（总结、待办、章节）；5.上传音视频生成妙记，也支持将本地音视频文件转成纪要、逐字稿、文字稿、撰写文字等产物；6.更新妙记标题（重命名妙记）；7.替换妙记逐字稿中的说话人。遇到这类请求时，应优先使用本 skill。飞书妙记 URL 格式: http(s)://<host>/minutes/<minute-token>"
 metadata:
   requires:
     bins: ["lark-cli"]
@@ -77,11 +77,11 @@ lark-cli vc +notes --minute-tokens <minute_token>
 1. 当用户需要通过上传本地音视频文件来生成妙记时使用。
 2. 当用户说"把音视频文件转成纪要""把录音转成逐字稿/文字稿/撰写文字""把 mp4/mp3 转成总结/待办/章节"时，也先走这个入口。
 3. **处理流程**：
-   - **上传音视频获取 `file_token`**：使用 [`lark-cli drive +upload`](../lark-drive/references/lark-drive-upload.md) 上传本地文件到云空间并获取 `file_token`。
+   - **上传音视频获取 `file_token`**：使用 [`lark-cli drive +upload`](../lark-drive/references/lark-drive-upload.md) 上传本地文件到云空间（云盘/云存储）并获取 `file_token`。
    - **生成妙记**：获取到 `file_token` 后，调用 [`lark-cli minutes +upload`](references/lark-minutes-upload.md) 将文件转换为妙记并获取 `minute_url` 链接。
    - **继续获取纪要 / 逐字稿（按需）**：如果用户目标不是只要妙记链接，而是要纪要、逐字稿、总结、待办或章节，则从 `minute_url` 中提取 `minute_token`，再调用 [`lark-cli vc +notes --minute-tokens`](../lark-vc/references/lark-vc-notes.md) 获取对应产物。
 
-> **注意**：必须先获取飞书云空间的 `file_token` 才能进行转换。
+> **注意**：必须先获取飞书云空间（云盘/云存储）的 `file_token` 才能进行转换。
 >
 > **不要误走本地转写工具**：当用户目标是把本地音视频文件转成纪要、逐字稿、文字稿、撰写文字时，不要改用 `ffmpeg`、`whisper` 或其他本地 ASR/转码命令；标准路径就是 `drive +upload -> minutes +upload -> vc +notes --minute-tokens`。
 
@@ -109,6 +109,8 @@ Minutes (妙记) ← minute_token 标识
 > - 用户说"这个妙记的逐字稿 / 文字稿 / 撰写文字 / 总结 / 待办 / 章节" → 使用 [vc +notes --minute-tokens](../lark-vc/references/lark-vc-notes.md)
 > - 用户说"通过文件生成妙记 / 把音视频转妙记" → 先上传获取 `file_token`，然后使用 `minutes +upload`
 > - 用户说"把音视频文件转成纪要 / 逐字稿 / 文字稿 / 撰写文字 / 总结 / 待办 / 章节" → 先上传获取 `file_token`，调用 `minutes +upload` 生成 `minute_url`，再提取 `minute_token` 走 `vc +notes --minute-tokens`
+> - 用户说"重命名妙记 / 改妙记标题 / 修改妙记名字" → `minutes +update`
+> - 用户说"替换说话人 / 把 A 的发言改成 B / 重新归属发言人" → `minutes +speaker-replace`
 
 ## Shortcuts（推荐优先使用）
 
@@ -119,10 +121,14 @@ Shortcut 是对常用操作的高级封装（`lark-cli minutes +<verb> [flags]`�
 | [`+search`](references/lark-minutes-search.md)     | Search minutes by keyword, owners, participants, and time range |
 | [`+download`](references/lark-minutes-download.md) | Download audio/video media file of a minute                     |
 | [`+upload`](references/lark-minutes-upload.md)     | Upload a media file token to generate a minute                  |
+| [`+update`](references/lark-minutes-update.md)     | Update a minute's title                                         |
+| [`+speaker-replace`](references/lark-minutes-speaker-replace.md) | Replace a speaker in a minute's transcript (rebind from one user to another) |
 
 - 使用 `+search` 命令时，必须阅读 [references/lark-minutes-search.md](references/lark-minutes-search.md)，了解搜索参数和返回值结构。
 - 使用 `+download` 命令时，必须阅读 [references/lark-minutes-download.md](references/lark-minutes-download.md)，了解下载参数和返回值结构。
 - 使用 `+upload` 命令时，必须阅读 [references/lark-minutes-upload.md](references/lark-minutes-upload.md)，了解生成参数和返回值结构。
+- 使用 `+update` 命令时，必须阅读 [references/lark-minutes-update.md](references/lark-minutes-update.md)，了解修改参数和返回值结构。
+- 使用 `+speaker-replace` 命令时，必须阅读 [references/lark-minutes-speaker-replace.md](references/lark-minutes-speaker-replace.md)，了解参数和限制（仅支持用户 ID，不支持姓名）。
 
 <!-- AUTO-GENERATED-START — gen-skills.py 管理，勿手动编辑 -->
 
@@ -146,5 +152,7 @@ lark-cli minutes <resource> <method> [flags] # 调用 API
 | `+search`     | `minutes:minutes.search:read`  |
 | `minutes.get` | `minutes:minutes:readonly`     |
 | `+download`   | `minutes:minutes.media:export` |
+| `+update`     | `minutes:minutes:update`       |
+| `+speaker-replace` | `minutes:minutes:update` |
 
 <!-- AUTO-GENERATED-END -->
