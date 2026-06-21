@@ -108,7 +108,7 @@ metadata:
 
 1. **确认身份** — 首次操作邮箱前先调用 `lark-cli mail user_mailboxes profile --params '{"user_mailbox_id":"me"}'` 获取当前用户的真实邮箱地址（`primary_email_address`），不要通过系统用户名猜测。后续判断"发件人是否为用户本人"时以此地址为准。
 2. **浏览** — `+triage` 查看收件箱摘要，获取 `message_id` / `thread_id`
-3. **阅读** — `+message` 读单封邮件，`+thread` 读整个会话
+3. **阅读** — `+message` 只读单封邮件；已有多个 `message_id` 时用 `+messages` 批量读取，不要循环调用 `+message`；`+thread` 读整个会话
 4. **回复** — `+reply` / `+reply-all`（默认存草稿，加 `--confirm-send` 则立即发送）
 5. **转发** — `+forward`（默认存草稿，加 `--confirm-send` 则立即发送）
 6. **新邮件** — `+send` 存草稿（默认），加 `--confirm-send` 发送
@@ -358,7 +358,7 @@ lark-cli mail +reply --message-id <id> --body '收到，谢谢'
 
 ### 读取邮件：按需控制返回内容
 
-`+message`、`+messages`、`+thread` 默认返回 HTML 正文（`--html=true`）。仅需确认操作结果（如验证标记已读、移动文件夹是否成功）时，用 `--html=false` 跳过 HTML 正文，只返回纯文本，显著减少 token 消耗。
+`+message`、`+messages`、`+thread` 默认返回 HTML 正文（`--html=true`）。`+message` 只适合单个 `message_id`；多个已知 `message_id` 请一次性传给 `+messages --message-ids <id1>,<id2>,<id3>`。仅需确认操作结果（如验证标记已读、移动文件夹是否成功）时，用 `--html=false` 跳过 HTML 正文，只返回纯文本，显著减少 token 消耗。
 
 输出默认为结构化 JSON，可直接读取，无需额外编码转换。
 
@@ -368,6 +368,9 @@ lark-cli mail +message --message-id <id> --html=false
 
 # ✅ 需要阅读完整内容：保持默认
 lark-cli mail +message --message-id <id>
+
+# ✅ 已有多个 message_id：批量读取，避免循环调用 +message
+lark-cli mail +messages --message-ids <id1>,<id2>,<id3> --html=false
 ```
 
 ### 邮件模板（`+template-create` / `+template-update` / `--template-id`）
@@ -477,8 +480,8 @@ Shortcut 是对常用操作的高级封装（`lark-cli mail +<verb> [flags]`）�
 
 | Shortcut | 说明 |
 |----------|------|
-| [`+message`](references/lark-mail-message.md) | Use when reading full content for a single email by message ID. Returns normalized body content plus attachments metadata, including inline images. |
-| [`+messages`](references/lark-mail-messages.md) | Use when reading full content for multiple emails by message ID. Prefer this shortcut over calling raw mail user_mailbox.messages batch_get directly, because it base64url-decodes body fields and returns normalized per-message output that is easier to consume. |
+| [`+message`](references/lark-mail-message.md) | Use only when reading full content for one email by one message ID. For multiple message IDs, use `mail +messages`; do not loop `mail +message`. |
+| [`+messages`](references/lark-mail-messages.md) | Use when reading full content for multiple emails by message ID. Accepts comma-separated message IDs; CLI handles more than 20 IDs in batches and merges output. |
 | [`+thread`](references/lark-mail-thread.md) | Use when querying a full mail conversation/thread by thread ID. Returns all messages in chronological order, including replies and drafts, with body content and attachments metadata, including inline images. |
 | [`+triage`](references/lark-mail-triage.md) | List mail summaries (date/from/subject/message_id). Use --query for full-text search, --filter for exact-match conditions. |
 | [`+watch`](references/lark-mail-watch.md) | Watch for incoming mail events via WebSocket (requires scope mail:event and bot event mail.user_mailbox.event.message_received_v1 added). Run with --print-output-schema to see per-format field reference before parsing output. |
@@ -668,4 +671,3 @@ lark-cli mail <resource> <method> [flags] # 调用 API
 | `user_mailbox.threads.list` | `mail:user_mailbox.message:readonly` |
 | `user_mailbox.threads.modify` | `mail:user_mailbox.message:modify` |
 | `user_mailbox.threads.trash` | `mail:user_mailbox.message:modify` |
-
