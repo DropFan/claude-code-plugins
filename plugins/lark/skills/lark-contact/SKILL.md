@@ -19,10 +19,6 @@ metadata:
 > （在 Claude Code 中可忽略本说明，lark-cli 在本机 shell 直接可用。）
 
 
-# contact (v2)
-
-**CRITICAL — 开始前 MUST 先用 Read 工具读取 [`../lark-shared/SKILL.md`](../lark-shared/SKILL.md)，其中包含认证、权限处理**
-
 ## 选哪个命令
 
 **user 身份和 bot 身份是两条完全独立的路径**。先确定当前身份,再按下表选命令:

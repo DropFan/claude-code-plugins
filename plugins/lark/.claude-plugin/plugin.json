@@ -1,7 +1,7 @@
 {
   "name": "lark",
   "description": "Operate Feishu/Lark (IM, Docs, Base, Sheets, Calendar, Drive, Wiki, Task, OKR, VC, etc.) via the local lark-cli. Mirrors the Claude Code lark skill set for Cowork. 飞书/Lark 全套技能。",
-  "version": "1.0.56",
+  "version": "1.0.60",
   "author": {
     "name": "Tiger",
     "url": "https://github.com/DropFan"
