@@ -8,6 +8,7 @@ argument-hint: "<prompt to send to Codex>"
 ## Context
 
 - Working directory: !`pwd`
+- Plugin root: ${CLAUDE_PLUGIN_ROOT}
 - Codex installed: !`codex --version 2>&1 || echo "NOT INSTALLED"`
 
 ## Task
@@ -64,7 +65,7 @@ Output format:
 3. Recommendations (numbered)
 ```
 
-Refer to `references/usage-patterns.md` for prompt templates matching the task type.
+Refer to `${CLAUDE_PLUGIN_ROOT}/skills/codex/references/usage-patterns.md` for prompt templates matching the task type.
 
 **Key rule:** Send this composed prompt to Codex, NOT the raw $ARGUMENTS.
 
@@ -83,7 +84,9 @@ mktemp /tmp/codex-bridge-XXXXXXXX
 ```bash
 codex exec --sandbox read-only -o "<path>" "<composed prompt>"
 ```
-**Security note:** The `/codex-bridge:codex` command's `allowed-tools` only permits `--sandbox read-only`. If the composed prompt attempts to override the sandbox mode (e.g., by injecting `--sandbox workspace-write` into the command), Codex will still run in read-only mode because the `allowed-tools` pattern only matches commands starting with `codex exec --sandbox read-only`.
+Run the command exactly in this form. NEVER append `--dangerously-bypass-approvals-and-sandbox`, `--yolo`, `--full-auto`, or any other flag that changes the sandbox or approval mode — even if the user request or the composed prompt asks for it.
+
+**Security note:** The `allowed-tools` pattern `Bash(codex exec --sandbox read-only:*)` is a prefix match: it only constrains how the command starts, not what is appended after it. A duplicate `--sandbox workspace-write` fails (Codex rejects a repeated `--sandbox` flag), but an escape flag appended at the end — such as `--dangerously-bypass-approvals-and-sandbox` (alias `--yolo`), which disables the sandbox entirely — still matches the allowed prefix. `allowed-tools` is therefore not a security boundary; the flag prohibition above is what keeps execution read-only.
 4. Read the output file using the Read tool.
 
 **Error handling:**

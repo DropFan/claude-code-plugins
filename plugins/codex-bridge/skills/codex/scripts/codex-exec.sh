@@ -99,6 +99,19 @@ if [[ "$SANDBOX" != "read-only" && "$SANDBOX" != "workspace-write" ]]; then
     exit 1
 fi
 
+# Reject flags that would escape the sandbox or skip approvals. Option
+# values and the prompt are forwarded to Codex CLI as argv elements, so a
+# value like "--dangerously-bypass-approvals-and-sandbox" could otherwise
+# be parsed by Codex as a flag.
+for arg in "${EXTRA_ARGS[@]}" "$PROMPT"; do
+    case "$arg" in
+        --dangerously-*|--yolo|--full-auto)
+            echo "ERROR: forbidden flag '$arg' — this wrapper never bypasses the sandbox or approval policy" >&2
+            exit 1
+            ;;
+    esac
+done
+
 # Validate --timeout is a positive integer
 if ! [[ "$TIMEOUT" =~ ^[0-9]+$ ]] || [[ "$TIMEOUT" -le 0 ]]; then
     echo "ERROR: --timeout must be a positive integer, got '$TIMEOUT'" >&2

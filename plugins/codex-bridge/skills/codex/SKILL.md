@@ -1,5 +1,5 @@
 ---
-name: Codex Bridge
+name: codex
 description: >
   This skill should be used ONLY when the user explicitly mentions "codex" by name.
   Trigger phrases: "use codex", "ask codex", "let codex review", "compare with codex",
@@ -17,7 +17,7 @@ Route user requests to the appropriate Codex command. Commands handle context co
 ## Safety
 
 - Default sandbox: `read-only`. Only use `workspace-write` on explicit user request.
-- Forbidden flags: `--dangerously-bypass-approvals-and-sandbox`, `--full-auto`, `--sandbox danger-full-access`
+- Forbidden flags: `--dangerously-bypass-approvals-and-sandbox` (and its alias `--yolo`), `--full-auto`, `--sandbox danger-full-access`
 - Never pass secrets (API keys, tokens, passwords) in Codex prompts.
 
 ## Intent Classification & Routing
