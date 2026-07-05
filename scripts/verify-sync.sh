@@ -5,7 +5,7 @@
 # Usage: bash scripts/verify-sync.sh [--run-sync]
 #
 # Checks:
-#   1. Field-level comparison (description, version, author) per plugin
+#   1. Field-level comparison (description, version, author, keywords, license) per plugin
 #   2. Orphan entries in marketplace.json (no plugin.json on disk)
 #   3. Missing entries (plugin.json on disk but not in marketplace.json)
 #   4. Optionally runs sync-plugins.sh and checks idempotency (--run-sync)
@@ -71,6 +71,8 @@ for plugin_json in "$PLUGINS_DIR"/*/.claude-plugin/plugin.json; do
   p_version="$(jq -r '.version' "$plugin_json")"
   p_author_name="$(jq -r '.author.name' "$plugin_json")"
   p_author_url="$(jq -r '.author.url // empty' "$plugin_json")"
+  p_keywords="$(jq -c '.keywords // empty' "$plugin_json")"
+  p_license="$(jq -r '.license // empty' "$plugin_json")"
 
   # Check if plugin exists in marketplace.json
   m_exists="$(jq --arg pname "$p_name" '[.plugins[] | select(.name == $pname)] | length' "$MARKETPLACE")"
@@ -84,6 +86,8 @@ for plugin_json in "$PLUGINS_DIR"/*/.claude-plugin/plugin.json; do
   m_version="$(jq -r --arg pname "$p_name" '.plugins[] | select(.name == $pname) | .version' "$MARKETPLACE")"
   m_author_name="$(jq -r --arg pname "$p_name" '.plugins[] | select(.name == $pname) | .author.name' "$MARKETPLACE")"
   m_author_url="$(jq -r --arg pname "$p_name" '.plugins[] | select(.name == $pname) | (.author.url // empty)' "$MARKETPLACE")"
+  m_keywords="$(jq -c --arg pname "$p_name" '.plugins[] | select(.name == $pname) | (.keywords // empty)' "$MARKETPLACE")"
+  m_license="$(jq -r --arg pname "$p_name" '.plugins[] | select(.name == $pname) | (.license // empty)' "$MARKETPLACE")"
   m_source="$(jq -r --arg pname "$p_name" '.plugins[] | select(.name == $pname) | .source' "$MARKETPLACE")"
 
   # Compare description
@@ -118,6 +122,28 @@ for plugin_json in "$PLUGINS_DIR"/*/.claude-plugin/plugin.json; do
     match "author.url (not required)"
   fi
 
+  # Compare keywords (optional: must be equal, or absent on both sides)
+  if [[ "$m_keywords" == "$p_keywords" ]]; then
+    if [[ -n "$p_keywords" ]]; then
+      match "keywords"
+    else
+      match "keywords (not required)"
+    fi
+  else
+    drift "keywords: marketplace='$m_keywords' vs plugin.json='$p_keywords'"
+  fi
+
+  # Compare license (optional: must be equal, or absent on both sides)
+  if [[ "$m_license" == "$p_license" ]]; then
+    if [[ -n "$p_license" ]]; then
+      match "license"
+    else
+      match "license (not required)"
+    fi
+  else
+    drift "license: marketplace='$m_license' vs plugin.json='$p_license'"
+  fi
+
   # Check source is local
   if [[ "$m_source" == "./plugins/"* ]]; then
     match "source is local path"
@@ -142,8 +168,9 @@ while IFS= read -r entry_name; do
   fi
 
   # Check if this plugin exists on disk
+  # (${arr[@]+...} keeps bash 3.2's set -u happy when the array is empty)
   found=false
-  for dp in "${DISK_PLUGINS[@]}"; do
+  for dp in ${DISK_PLUGINS[@]+"${DISK_PLUGINS[@]}"}; do
     if [[ "$dp" == "$entry_name" ]]; then
       found=true
       break
@@ -164,7 +191,7 @@ fi
 # plugin.json on disk but not in marketplace.json
 
 missing_found=false
-for dp in "${DISK_PLUGINS[@]}"; do
+for dp in ${DISK_PLUGINS[@]+"${DISK_PLUGINS[@]}"}; do
   m_count="$(jq --arg pname "$dp" '[.plugins[] | select(.name == $pname)] | length' "$MARKETPLACE")"
   if [[ "$m_count" -eq 0 ]]; then
     drift "missing from marketplace.json: '$dp' (has plugin.json on disk)"
@@ -187,39 +214,51 @@ if $RUN_SYNC; then
     exit 1
   fi
 
-  # Save copies
+  # Back up the files sync-plugins.sh writes. The EXIT trap restores them and
+  # removes the temp files on every exit path, including a failed sync run,
+  # so this script never leaves the repo modified.
   MARKETPLACE_BAK="$(mktemp)"
   README_BAK="$(mktemp)"
+  SYNC_LOG="$(mktemp)"
   cp "$MARKETPLACE" "$MARKETPLACE_BAK"
   cp "$REPO_ROOT/README.md" "$README_BAK"
 
-  # Run sync
-  bash "$SYNC_SCRIPT" >/dev/null 2>&1
+  restore_backups() {
+    if [[ -f "$MARKETPLACE_BAK" ]]; then
+      cp "$MARKETPLACE_BAK" "$MARKETPLACE"
+    fi
+    if [[ -f "$README_BAK" ]]; then
+      cp "$README_BAK" "$REPO_ROOT/README.md"
+    fi
+    rm -f "$MARKETPLACE_BAK" "$README_BAK" "$SYNC_LOG"
+  }
+  trap restore_backups EXIT
 
-  # Compare
+  # Run sync, keeping its output for diagnostics
+  if ! bash "$SYNC_SCRIPT" > "$SYNC_LOG" 2>&1; then
+    echo "Error: sync-plugins.sh failed during idempotency check; its output was:" >&2
+    cat "$SYNC_LOG" >&2
+    echo "Restoring marketplace.json and README.md from backup." >&2
+    exit 1
+  fi
+
+  # Compare (the trap restores the originals afterwards either way)
   if diff -q "$MARKETPLACE_BAK" "$MARKETPLACE" >/dev/null 2>&1; then
     match "marketplace.json unchanged after sync (idempotent)"
   else
     drift "marketplace.json changed after running sync-plugins.sh"
-    # Restore original
-    cp "$MARKETPLACE_BAK" "$MARKETPLACE"
   fi
 
   if diff -q "$README_BAK" "$REPO_ROOT/README.md" >/dev/null 2>&1; then
     match "README.md unchanged after sync (idempotent)"
   else
     drift "README.md changed after running sync-plugins.sh"
-    # Restore original
-    cp "$README_BAK" "$REPO_ROOT/README.md"
   fi
-
-  rm -f "$MARKETPLACE_BAK" "$README_BAK"
 fi
 
 # --- Summary ---
 
 echo ""
-total=$((MATCH_COUNT + DRIFT_COUNT))
 if [[ $DRIFT_COUNT -eq 0 ]]; then
   echo "Summary: All plugins in sync ($MATCH_COUNT checks passed)"
   exit 0

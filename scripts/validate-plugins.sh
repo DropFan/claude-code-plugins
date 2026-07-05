@@ -249,7 +249,6 @@ if [[ $found_plugins -eq 0 ]]; then
   exit 1
 fi
 
-total=$((PASS_COUNT + FAIL_COUNT))
 echo "Summary: $PASS_COUNT checks passed, $FAIL_COUNT failed"
 
 if [[ $FAIL_COUNT -gt 0 ]]; then

@@ -1,0 +1,21 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate plugin structure and metadata
+        run: bash scripts/validate-plugins.sh
+
+      - name: Verify marketplace.json sync
+        run: bash scripts/verify-sync.sh
+
+      - name: Run maintenance script tests
+        run: bash tests/run-tests.sh
