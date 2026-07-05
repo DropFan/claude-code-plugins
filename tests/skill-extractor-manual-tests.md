@@ -1,7 +1,7 @@
 # skill-extractor Manual Test Checklist
 
-Last updated: 2026-03-18
-Plugin version: 0.1.1
+Last updated: 2026-07-05
+Plugin version: 0.1.3
 
 ## Prerequisites
 

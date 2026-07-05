@@ -19,3 +19,10 @@ __pycache__/
 
 # Planning docs (local-only)
 .planning/
+
+# Local tool artifacts and private session exports (local-only, same as .planning/)
+# Note: does NOT affect .claude-plugin/ directories (pattern matches the exact name only)
+.agents/
+.claude/
+.codex/
+chats/

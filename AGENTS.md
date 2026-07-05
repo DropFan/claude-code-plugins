@@ -1,5 +1,7 @@
 # Claude Code Plugins Collection
 
+<!-- This file mirrors CLAUDE.md. Keep the two in sync when editing either. -->
+
 This is a Claude Code plugin marketplace repository.
 
 ## Repository Structure

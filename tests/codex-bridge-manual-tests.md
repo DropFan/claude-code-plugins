@@ -1,7 +1,7 @@
 # codex-bridge Manual Test Checklist
 
-Last updated: 2026-03-18
-Plugin version: 0.3.0
+Last updated: 2026-07-05
+Plugin version: 0.3.2
 
 ## Prerequisites
 

@@ -1,9 +1,10 @@
 {
   "name": "update-plugins",
   "description": "Batch update all installed Claude Code plugins with a single command",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "author": {
     "name": "Tiger",
     "url": "https://github.com/DropFan"
-  }
+  },
+  "license": "MIT"
 }

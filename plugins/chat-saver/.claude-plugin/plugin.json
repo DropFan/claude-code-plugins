@@ -1,9 +1,10 @@
 {
   "name": "chat-saver",
   "description": "Save, search, manage, and export Claude Code conversations to documents or external platforms",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "author": {
     "name": "Tiger",
     "url": "https://github.com/DropFan"
-  }
+  },
+  "license": "MIT"
 }
