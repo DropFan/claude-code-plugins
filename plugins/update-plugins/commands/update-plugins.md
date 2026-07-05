@@ -1,5 +1,5 @@
 ---
-allowed-tools: Bash
+allowed-tools: Bash(claude plugin list:*), Bash(claude plugin update:*)
 description: Batch update all installed Claude Code plugins to latest versions
 ---
 

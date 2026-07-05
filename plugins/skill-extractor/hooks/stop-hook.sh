@@ -54,9 +54,9 @@ if [ "$JQ_EXIT" -ne 0 ] && [ "${FILE_SIZE:-0}" -gt 10240 ]; then
   exit 0
 fi
 
-UT=$(echo "$TOOL_DATA" | grep -c '^USER$' || echo 0)
-WE=$(echo "$TOOL_DATA" | grep -cE '^(CREATED|EDITED):' || echo 0)
-TC=$(echo "$TOOL_DATA" | grep -c '^Task$' || echo 0)
+UT=$(echo "$TOOL_DATA" | grep -c '^USER$' || true)
+WE=$(echo "$TOOL_DATA" | grep -cE '^(CREATED|EDITED):' || true)
+TC=$(echo "$TOOL_DATA" | grep -c '^Task$' || true)
 
 # Extractable patterns need code output + complexity
 SCORE=$(( UT * 1 + WE * 5 + TC * 4 ))
@@ -67,9 +67,9 @@ fi
 
 # Build contextual message describing what was built
 CREATED=$(echo "$TOOL_DATA" | grep '^CREATED:' | sed 's/^CREATED://' | sort -u)
-CREATED_COUNT=$(echo "$CREATED" | grep -c '.' || echo 0)
+CREATED_COUNT=$(echo "$CREATED" | grep -c '.' || true)
 EDITED=$(echo "$TOOL_DATA" | grep '^EDITED:' | sed 's/^EDITED://' | sort -u)
-EDITED_COUNT=$(echo "$EDITED" | grep -c '.' || echo 0)
+EDITED_COUNT=$(echo "$EDITED" | grep -c '.' || true)
 
 if [ "$CREATED_COUNT" -gt 0 ]; then
   SHOWN=$(echo "$CREATED" | head -2 | tr '\n' ',' | sed 's/,$//' | sed 's/,/, /g')

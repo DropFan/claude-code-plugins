@@ -6,8 +6,8 @@
         "matcher": "*",
         "hooks": [
           {
-            "type": "prompt",
-            "prompt": "If this conversation contains reusable patterns (workflow, methodology, strategy) worth extracting as a Skill/Command/Agent, block and suggest `/skill-extractor:extract`. Otherwise approve silently."
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/stop-hook.sh"
           }
         ]
       }
