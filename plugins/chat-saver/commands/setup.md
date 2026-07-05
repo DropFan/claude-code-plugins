@@ -14,7 +14,7 @@ Initialize or update the chat-saver settings file (`.claude/chat-saver.local.md`
 
 ### Step 1: Check Existing Configuration
 
-See `references/settings-loading.md` for the full field schema.
+See `${CLAUDE_PLUGIN_ROOT}/skills/conversation-export/references/settings-loading.md` for the full field schema.
 
 1. Use the Read tool to check if `.claude/chat-saver.local.md` exists in the project root
 2. **If it exists:**
@@ -55,7 +55,7 @@ Guide the user through each parameter using AskUserQuestion. Ask all 5 questions
 - **Feishu** — Configure Feishu/飞书 export (requires server URL)
 - **Both** — Configure both platforms
 
-When in **Update** mode, show the current value for each parameter and include it as the recommended option. For Question 5, if the plugin's `.mcp.json` already exists at `${CLAUDE_PLUGIN_ROOT}/.mcp.json`, show the currently configured platforms.
+When in **Update** mode, show the current value for each parameter and include it as the recommended option. For Question 5, if a project-level `.mcp.json` already exists in the project root, show the currently configured platforms.
 
 ### Step 3: Confirm Custom Values
 
@@ -73,7 +73,7 @@ If the user chose "Custom" for save directory, use AskUserQuestion to ask them t
    - Use AskUserQuestion to ask the user for the Feishu MCP server URL
    - Provide default: `http://localhost:8090/sse`
 
-3. **Write `.mcp.json`** to `${CLAUDE_PLUGIN_ROOT}/.mcp.json` with the configured servers:
+3. **Write `.mcp.json`** to the project root (`./.mcp.json`) with the configured servers. This file contains the token in plain text — before writing, check that `.mcp.json` is covered by the project's `.gitignore`, and warn the user if it is not:
 
 **Notion only:**
 ```json
@@ -146,11 +146,11 @@ chat-saver configured!
   Save to: ./chats
   Stop hook: enabled
 
-  MCP Export: Notion ✓ (configured in plugin .mcp.json)
+  MCP Export: Notion ✓ (configured in project .mcp.json)
 
   Tips:
   - Edit custom_header / custom_footer in the settings file to customize export branding
-  - MCP tokens are stored in the plugin's .mcp.json — do not commit to version control
+  - MCP tokens are stored in the project's .mcp.json — keep it out of version control (.gitignore)
 ```
 
 If MCP was skipped:

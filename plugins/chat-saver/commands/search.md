@@ -8,6 +8,7 @@ argument-hint: "<keyword> [--date YYYY-MM-DD] [--from YYYY-MM-DD --to YYYY-MM-DD
 
 - Working directory: !`pwd`
 - Current date: !`date '+%Y-%m-%d %H:%M'`
+- Plugin root: ${CLAUDE_PLUGIN_ROOT}
 
 ## Task
 
@@ -17,7 +18,7 @@ Search through saved conversation files for specific keywords, optionally filter
 
 ### Step 0: Load Settings
 
-Load settings from `.claude/chat-saver.local.md` following `references/settings-loading.md`. Extract: `save_dir`.
+Load settings from `.claude/chat-saver.local.md` following `${CLAUDE_PLUGIN_ROOT}/skills/conversation-export/references/settings-loading.md`. Extract: `save_dir`.
 
 ### Step 1: Parse Arguments
 

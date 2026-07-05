@@ -18,7 +18,7 @@ Export raw conversation data directly from Claude Code's JSONL session files. Un
 
 ### Step 0: Load Settings
 
-Load settings from `.claude/chat-saver.local.md` following `references/settings-loading.md`. Extract: `save_dir`, `default_format`, `custom_footer`.
+Load settings from `.claude/chat-saver.local.md` following `${CLAUDE_PLUGIN_ROOT}/skills/conversation-export/references/settings-loading.md`. Extract: `save_dir`, `default_format`, `custom_footer`.
 
 ### Step 1: Parse Arguments
 

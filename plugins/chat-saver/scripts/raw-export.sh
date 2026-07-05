@@ -79,18 +79,19 @@ if $LIST_MODE; then
     IDX=$((IDX + 1))
     BASENAME=$(basename "$f" .jsonl)
     TOTAL=$(wc -l < "$f" | tr -d ' ')
-    TIMESTAMP=$(jq -r 'limit(1; select(.type == "user") | .timestamp // empty)' "$f" 2>/dev/null || true)
+    TIMESTAMP=$(jq -rRn '[inputs | fromjson? | select(.type == "user") | .timestamp // empty][0] // empty' "$f" 2>/dev/null || true)
     DATE_STR="${TIMESTAMP:0:16}"
     # Get first user text message (truncated)
-    FIRST_MSG=$(jq -r 'limit(1;
+    FIRST_MSG=$(jq -rRn '[inputs |
+      fromjson? |
       select(.type == "user") |
       if (.message.content | type) == "string" then .message.content
       elif (.message.content | type) == "array" then
         [.message.content[] | select(.type == "text") | .text] | first // "[tool result]"
       else empty end
-    ) | split("\n") | first | .[0:60]' "$f" 2>/dev/null || true)
-    # Escape pipes for table
-    FIRST_MSG=$(echo "$FIRST_MSG" | tr '|' '/')
+    ][0] // "" | split("\n") | (first // "") | .[0:60]' "$f" 2>/dev/null || true)
+    # Flatten newlines and escape pipes for table
+    FIRST_MSG=$(printf '%s' "$FIRST_MSG" | tr '\n|' ' /')
     if [[ ${#FIRST_MSG} -ge 60 ]]; then
       FIRST_MSG="${FIRST_MSG}..."
     fi

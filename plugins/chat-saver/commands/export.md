@@ -8,6 +8,7 @@ argument-hint: "<platform: notion|feishu> [scope: full|summary]"
 
 - Working directory: !`pwd`
 - Current date: !`date '+%Y-%m-%d %H:%M'`
+- Plugin root: ${CLAUDE_PLUGIN_ROOT}
 
 ## Task
 
@@ -17,7 +18,7 @@ Export the current conversation to an external platform (Notion or Feishu/飞书
 
 ### Step 0: Load Settings
 
-Load settings from `.claude/chat-saver.local.md` following `references/settings-loading.md`. Extract: `default_scope`, `save_dir`, `custom_footer`.
+Load settings from `.claude/chat-saver.local.md` following `${CLAUDE_PLUGIN_ROOT}/skills/conversation-export/references/settings-loading.md`. Extract: `default_scope`, `save_dir`, `custom_footer`.
 
 ### Step 1: Parse Arguments
 
@@ -44,7 +45,7 @@ If no matching MCP tools are found for the selected platform:
 2. Provide setup instructions:
    - For Notion: add `@notionhq/notion-mcp-server` to project or global `.mcp.json` with `NOTION_TOKEN`
    - For Feishu: add a Feishu MCP server (SSE or stdio) to `.mcp.json`
-3. Refer them to `references/mcp-export-guide.md` in this plugin for detailed setup steps
+3. Refer them to `${CLAUDE_PLUGIN_ROOT}/skills/conversation-export/references/mcp-export-guide.md` for detailed setup steps
 4. Offer to save locally instead (fall back to save-chat)
 
 ### Step 3: Determine Topic

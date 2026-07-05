@@ -8,6 +8,7 @@ argument-hint: ""
 
 - Working directory: !`pwd`
 - Current date: !`date '+%Y-%m-%d %H:%M'`
+- Plugin root: ${CLAUDE_PLUGIN_ROOT}
 
 ## Task
 
@@ -17,7 +18,7 @@ Display statistics about saved conversation files in the save directory.
 
 ### Step 0: Load Settings
 
-Load settings from `.claude/chat-saver.local.md` following `references/settings-loading.md`. Extract: `save_dir`.
+Load settings from `.claude/chat-saver.local.md` following `${CLAUDE_PLUGIN_ROOT}/skills/conversation-export/references/settings-loading.md`. Extract: `save_dir`.
 
 ### Step 1: Scan Directory
 

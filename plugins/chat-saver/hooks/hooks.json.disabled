@@ -1,13 +1,12 @@
 {
-  "description": "Optional: Prompt to save conversation when session ends. Remove this file or rename to hooks.json.disabled to disable.",
+  "description": "Optional: Suggest saving the conversation when the session ends. Disabled by default — rename to hooks.json to enable. Respects stop_hook / stop_hook_threshold in .claude/chat-saver.local.md.",
   "hooks": {
     "Stop": [
       {
-        "matcher": "*",
         "hooks": [
           {
-            "type": "prompt",
-            "prompt": "If this conversation has substantial content worth saving, block and suggest `/chat-saver:save-chat`. Otherwise approve silently."
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/stop-hook.sh"
           }
         ]
       }

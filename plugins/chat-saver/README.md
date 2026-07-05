@@ -23,6 +23,7 @@ Save, search, manage, and export Claude Code conversations.
 | `search` | Search saved conversations | `/search auth --from 2024-01-01` |
 | `list` | List all saved files | `/list --sort date` |
 | `clean` | Remove old files | `/clean --before 2024-01-01 --dry-run` |
+| `stats` | Show statistics for saved files | `/stats` |
 | `export` | Export to Notion/Feishu | `/export notion full` |
 | `setup` | Initialize or update configuration | `/setup` |
 
@@ -75,6 +76,12 @@ Save, search, manage, and export Claude Code conversations.
 /chat-saver:clean --before 2024-01-01       # Delete files older than date
 /chat-saver:clean --keep 10                 # Keep only 10 most recent
 /chat-saver:clean --dry-run                 # Preview without deleting
+```
+
+### Stats
+
+```
+/chat-saver:stats                           # Show statistics for saved files
 ```
 
 ### Export
@@ -130,8 +137,8 @@ custom_footer: ""
 | `default_format` | `md` | Default output format |
 | `default_scope` | `full` | Default content scope |
 | `save_dir` | `./chats` | Directory for saved files |
-| `stop_hook` | `true` | Enable session-end save suggestions |
-| `stop_hook_threshold` | `50` | Score threshold for save suggestions (higher = less frequent) |
+| `stop_hook` | `true` | Enable session-end save suggestions (only takes effect when the Stop hook is enabled — see [Optional: Auto-save Prompt](#optional-auto-save-prompt)) |
+| `stop_hook_threshold` | `50` | Score threshold for save suggestions (higher = less frequent); same prerequisite as `stop_hook` |
 | `custom_header` | `""` | Text prepended to exports (manual edit only) |
 | `custom_footer` | `""` | Text replacing default footer (manual edit only) |
 
@@ -166,13 +173,19 @@ See `skills/conversation-export/references/mcp-export-guide.md` for detailed set
 
 ## Installation
 
-Add to your Claude Code plugins:
+Install from the marketplace. In Claude Code, add the marketplace first:
 
-```bash
-claude plugin add /path/to/chat-saver
+```
+/plugin marketplace add DropFan/claude-code-plugins
 ```
 
-Or use with `--plugin-dir`:
+Then install the plugin:
+
+```
+/plugin install chat-saver@tiger-plugins
+```
+
+For local development, load the plugin directly:
 
 ```bash
 claude --plugin-dir /path/to/chat-saver
@@ -180,13 +193,15 @@ claude --plugin-dir /path/to/chat-saver
 
 ## Optional: Auto-save Prompt
 
-The plugin includes an optional `Stop` hook that intelligently detects valuable conversations and suggests saving before exiting. This hook is **included but can be disabled**.
+The plugin ships with an optional `Stop` hook that scores the session activity (user turns, file edits, tasks, commands) and suggests saving valuable conversations before exiting. The hook is **disabled by default** — it is distributed as `hooks/hooks.json.disabled`.
 
-To disable:
-- Rename `hooks/hooks.json` to `hooks/hooks.json.disabled`
+To enable:
+- Rename `hooks/hooks.json.disabled` to `hooks/hooks.json`
 
-To re-enable:
-- Rename back to `hooks/hooks.json`
+To disable again:
+- Rename it back to `hooks/hooks.json.disabled`
+
+Once enabled, the hook runs `hooks/stop-hook.sh`, which respects the `stop_hook` and `stop_hook_threshold` settings in `.claude/chat-saver.local.md`. While the hook is disabled, those two settings have no effect.
 
 ## File Structure
 
@@ -214,6 +229,7 @@ chat-saver/
 │           ├── settings-schema.md     # Settings configuration schema
 │           └── mcp-export-guide.md    # MCP export setup guide
 ├── hooks/
-│   └── hooks.json                     # Optional Stop hook
+│   ├── hooks.json.disabled            # Optional Stop hook (rename to hooks.json to enable)
+│   └── stop-hook.sh                   # Stop hook script (session scoring + save suggestion)
 └── README.md
 ```

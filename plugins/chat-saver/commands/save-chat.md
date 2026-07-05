@@ -18,7 +18,7 @@ Save the current conversation to a document file. Parse user arguments and guide
 
 ### Step 0: Load Settings
 
-Load settings from `.claude/chat-saver.local.md` following `references/settings-loading.md`. Extract: `default_format`, `default_scope`, `save_dir`, `custom_header`, `custom_footer`.
+Load settings from `.claude/chat-saver.local.md` following `${CLAUDE_PLUGIN_ROOT}/skills/conversation-export/references/settings-loading.md`. Extract: `default_format`, `default_scope`, `save_dir`, `custom_header`, `custom_footer`.
 
 ### Step 1: Parse Arguments
 
@@ -101,7 +101,7 @@ Analyze the conversation history to extract the main topic and classification ta
 2. Tags should be lowercase, single-word or hyphenated (e.g., `auth`, `bug-fix`, `frontend`, `refactor`)
 3. Prefer domain-specific tags over generic ones
 4. Common tag categories: technology (`react`, `python`), activity (`debug`, `review`, `design`), domain (`auth`, `payment`, `api`)
-5. Tags will be included in the document metadata (YAML frontmatter, HTML meta, or plain text header) — see `references/format-templates.md`
+5. Tags will be included in the document metadata (YAML frontmatter, HTML meta, or plain text header) — see `${CLAUDE_PLUGIN_ROOT}/skills/conversation-export/references/format-templates.md`
 
 ### Step 2.5: Check Existing Files (Append Mode)
 
@@ -132,7 +132,7 @@ mkdir -p <save_dir>
 
 ### Step 4: Generate Content
 
-Based on the chosen scope, generate the document content. **You MUST read `references/format-templates.md` from the `conversation-export` skill and strictly follow the templates** — including header metadata, content structure, and the footer.
+Based on the chosen scope, generate the document content. **You MUST read `${CLAUDE_PLUGIN_ROOT}/skills/conversation-export/references/format-templates.md` and strictly follow the templates** — including header metadata, content structure, and the footer.
 
 **If `--raw` mode (full scope):**
 
@@ -175,7 +175,7 @@ bash "${CLAUDE_PLUGIN_ROOT}/scripts/raw-export.sh" \
 
 **For append mode:**
 - Generate content **without** the document header (title, metadata section)
-- Prepend the format-appropriate continuation separator (see `references/format-templates.md`)
+- Prepend the format-appropriate continuation separator (see `${CLAUDE_PLUGIN_ROOT}/skills/conversation-export/references/format-templates.md`)
 - The separator includes the current date/time to mark the continuation point
 
 ### Step 5: Save File
