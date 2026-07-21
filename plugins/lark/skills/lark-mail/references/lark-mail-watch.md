@@ -47,7 +47,7 @@ lark-cli mail +watch --print-output-schema
 |------|------|------|
 | `--mailbox <id>` | `me` | 订阅目标邮箱 |
 | `--msg-format <mode>` | `metadata` | 输出模式：`metadata` / `minimal` / `plain_text_full` / `full` / `event` |
-| `--format <mode>` | `table` | 输出样式：`table` / `json` / `data` |
+| `--format <mode>` | `data` | 输出样式：`json`（带 ok/data 信封的 NDJSON 流）/ `data`（裸 NDJSON 流） |
 | `--folder-ids <json-array>` | — | 文件夹 ID 过滤，如 `["INBOX","SENT"]` |
 | `--folders <json-array>` | — | 文件夹名称过滤（与 `--folder-ids` 取并集） |
 | `--label-ids <json-array>` | — | 标签 ID 过滤，如 `["FLAGGED","IMPORTANT"]` |
@@ -91,4 +91,4 @@ lark-cli mail +watch --print-output-schema
 
 - [lark-mail](../SKILL.md) — 邮箱域总览
 - [lark-mail-triage](lark-mail-triage.md) — 邮件摘要列表
-- [lark-event](../../lark-event/SKILL.md) — 通用事件订阅
+- [lark-event-subscribe](../../lark-event/references/lark-event-subscribe.md) — 通用事件订阅

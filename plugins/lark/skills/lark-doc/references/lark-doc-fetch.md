@@ -17,8 +17,10 @@ lark-cli docs +fetch --doc Z1Fj...tnAc --detail with-ids
 lark-cli docs +fetch --doc Z1Fj...tnAc --scope outline --max-depth 3
 
 # 按 block id 区间精读
-lark-cli docs +fetch --doc Z1Fj...tnAc \
-  --scope range --start-block-id blkA --end-block-id blkB --detail with-ids
+lark-cli docs +fetch --doc Z1Fj...tnAc --scope range --start-block-id blkA --end-block-id blkB --detail with-ids
+
+# URL 带 #share 选区锚点时自动局部读取
+lark-cli docs +fetch --doc 'docURL#share-anchor'
 
 # 读整个章节（以标题 id 为锚点，自动展开到下一个同级/更高级标题前）
 lark-cli docs +fetch --doc Z1Fj...tnAc \
@@ -85,13 +87,21 @@ lark-cli docs +fetch --doc Z1Fj...tnAc \
     "document": {
       "document_id": "doxcnXXXX",
       "revision_id": 12,
-      "content": "<title>标题</title><p>文档内容...</p>"
+      "content": "<title>标题</title><p>文档内容...</p>",
+      "reference_map": {
+        "<block_type>": {
+          "<ref>": {
+            "<real-attr-key>": "<real-attr-value>"
+          }
+        }
+      },
+      "tips": "<safe replay or degradation guidance>"
     }
   }
 }
 ```
 
-`content` 的格式由 `--doc-format` 决定；`im-markdown` 仅用于获取内容后在 `lark-im` 场景下使用。设置 `--scope` 时会被 `<fragment>` 包裹，详见上文"局部读取的输出结构"。
+`content` 的格式由 `--doc-format` 决定。`reference_map` 是正文引用数据的结构化 sidecar：一级键 `block_type` 表示引用所在的块类型，二级键 `ref` 对应正文中的临时引用；每个引用的值是由 `real-attr-key` 和 `real-attr-value` 组成的真实属性映射，具体属性由块类型决定。没有提取数据时，`reference_map` 可能为空。`content` 和 `reference_map` 属于同一份响应，保留或回放内容时应配套处理。`tips` 给出安全回放或降级提示。`im-markdown` 仅用于获取内容后在 `lark-im` 场景下使用。设置 `--scope` 时会被 `<fragment>` 包裹，详见上文"局部读取的输出结构"。
 
 ## 参数
 

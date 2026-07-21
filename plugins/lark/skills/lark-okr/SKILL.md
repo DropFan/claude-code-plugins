@@ -42,12 +42,13 @@ Shortcut 是对常用操作的高级封装（`lark-cli okr +<verb> [flags]`）�
 | [`+batch-create`](references/lark-okr-batch-create.md)         | 批量创建 Objective 和 KR      |
 | [`+reorder`](references/lark-okr-reorder.md)                   | 调整 Objective 或 KR 的顺位    |
 | [`+weight`](references/lark-okr-weight.md)                     | 调整 Objective 或 KR 的权重    |
-| [`+indicator-update`](references/lark-okr-indicator-update.md) | 更新 Objective 或 KR 的指标当前值 |
+| [`+indicator-update`](references/lark-okr-indicator-update.md) | 更新 Objective 或 KR 的指标当前值（简单场景推荐）。更复杂的指标操作见 [量化指标管理](references/lark-okr-indicators.md) |
+| [`+patch`](references/lark-okr-patch.md)                       | 部分更新 Objective 或 KR（content、notes、score、deadline） |
 
 ## 格式说明
 
 - [`OKR 业务实体`](references/lark-okr-entities.md) 获取 OKR 实体结构，定义和关系，帮助你更好的使用 OKR 功能
-- [`ContentBlock 富文本格式`](references/lark-okr-contentblock.md) — Objective/KeyResult/Progress 中 Content/Note 字段使用的富文本格式说明
+- [`ContentBlock 富文本格式`](references/lark-okr-contentblock.md) — Objective/KeyResult/Progress 中 Content/Note 字段使用的富文本格式说明，以及简化的半纯文本（SemiPlainContent）格式的进一步说明。
 - **强烈建议** 在操作 OKR 前，阅读[`OKR 业务实体`](references/lark-okr-entities.md)以了解基础概念
 
 ## API Resources
@@ -56,6 +57,8 @@ Shortcut 是对常用操作的高级封装（`lark-cli okr +<verb> [flags]`）�
 
 - `delete` — 删除对齐关系
 - `get` — 获取对齐关系
+
+> **操作指南：** [OKR 对齐关系管理](references/lark-okr-alignments.md) 包含 list/create/delete 完整工作流
 
 ### categories
 
@@ -82,6 +85,8 @@ Shortcut 是对常用操作的高级封装（`lark-cli okr +<verb> [flags]`）�
 
 - `patch` — 更新量化指标
 
+> **操作指南：** [OKR 量化指标管理](references/lark-okr-indicators.md) 包含目标/KR 指标查询和 patch 更新完整工作流
+
 ### key_results
 
 - `delete` — 删除关键结果
@@ -91,6 +96,8 @@ Shortcut 是对常用操作的高级封装（`lark-cli okr +<verb> [flags]`）�
 ### key_result.indicators
 
 - `list` — 获取关键结果的量化指标
+
+> **操作指南：** [OKR 量化指标管理](references/lark-okr-indicators.md)
 
 ### objectives
 
