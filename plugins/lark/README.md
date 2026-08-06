@@ -31,9 +31,9 @@ In Cowork, run lark-cli on the local Mac (e.g. via Desktop Commander), not the L
 | [lark-attendance](skills/lark-attendance/SKILL.md) | 飞书考勤打卡：查询自己的考勤打卡记录 |
 | [lark-base](skills/lark-base/SKILL.md) | 飞书多维表格（Base）操作：建表、字段、记录、视图、统计、公式/lookup、表单、仪表盘、workflow、角色权限；遇到 Base/多维表格/bitable 或 /base/ 链接时使用。 |
 | [lark-calendar](skills/lark-calendar/SKILL.md) | 飞书日历：管理日历日程和会议室。 |
-| [lark-contact](skills/lark-contact/SKILL.md) | 飞书 / Lark 通讯录:按姓名 / 邮箱解析成 open_id,或按 open_id 反查姓名 / 部门 / 邮箱 / 联系方式 / 个人状态 / 签名。 |
+| [lark-contact](skills/lark-contact/SKILL.md) | 飞书 / Lark 通讯录:按姓名 / 邮箱解析成 open_id,或按 open_id 反查姓名 / 部门 / 邮箱 / 联系方式 / 个人状态 / 签名,以及按关键词搜索当前用户可见的机器人 / 智能体(agent)。 |
 | [lark-doc](skills/lark-doc/SKILL.md) | 飞书云文档（Docx / Wiki 文档）：读取和编辑飞书文档内容。 |
-| [lark-drive](skills/lark-drive/SKILL.md) | 飞书云空间（云盘/云存储）：管理 Drive 文件和文件夹，包含上传/下载、创建文件夹、复制/移动/删除、查看元数据、评论/权限/订阅、标题、版本、飞书文档密级标签（secure labels）和本地文件导入。 |
+| [lark-drive](skills/lark-drive/SKILL.md) | 飞书云空间（云盘/云存储）：管理 Drive 文件和文件夹，包含上传/下载、创建文件夹、复制/移动/删除、查看元数据、查询权限设置、评论/权限/订阅、标题、版本、飞书文档密级标签（secure labels）和本地文件导入。 |
 | [lark-event](skills/lark-event/SKILL.md) | Lark/Feishu real-time event listening / subscribing / consuming: stream events as NDJSON via `lark-cli event consume <EventKey>` (covers IM messages/reactions/chat changes, Approval status changes, Task updates, VC meeting started/joined/ended, Minutes generated, Whiteboard updated, etc.). |
 | [lark-im](skills/lark-im/SKILL.md) | 飞书即时通讯：收发消息和管理群聊。 |
 | [lark-mail](skills/lark-mail/SKILL.md) | 飞书邮箱：Use when user mentions 起草邮件、写邮件、草稿、发送/回复/转发邮件、查阅邮件、看邮件、搜索邮件、邮件文件夹、邮件标签、邮件联系人、监听新邮件、邮件收信规则等；use for mail/email intent only. |

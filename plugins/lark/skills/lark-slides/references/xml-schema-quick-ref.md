@@ -4,7 +4,7 @@
 
 ## 最重要的规则
 
-1. 协议标准写法应使用 `<presentation xmlns="http://www.larkoffice.com/sml/2.0">`；当前服务端实现可能兼容不带 `xmlns` 的输入，但不作为协议保证
+1. 协议标准写法应使用 `<presentation xmlns="https://www.larkoffice.com/sml/2.0">`；当前服务端实现可能兼容不带 `xmlns` 的输入，但不作为协议保证
 2. `<presentation>` 直接子元素只有 `<title>`、`<theme>`、`<slide>`
 3. `<slide>` 直接子元素只有 `<style>`、`<data>`、`<note>`
 4. 页面中的文本通常通过 `<content>` 表达，而不是把 `<title>`、`<body>` 直接挂在 `<slide>` 下
@@ -13,7 +13,7 @@
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
-<presentation xmlns="http://www.larkoffice.com/sml/2.0" width="960" height="540">
+<presentation xmlns="https://www.larkoffice.com/sml/2.0" width="960" height="540">
   <slide>
     <data>
       <shape type="text" topLeftX="80" topLeftY="80" width="800" height="120">
@@ -81,7 +81,7 @@ XSD 中的 `title`、`headline`、`sub-headline`、`body`、`caption` 主要出�
 **子元素：**
 
 - `<style>?` - 页面样式，目前可放 `<fill>`
-- `<data>?` - 页面元素容器，可放 `shape`、`line`、`polyline`、`img`、`table`、`icon`、`chart`、`undefined`
+- `<data>?` - 页面元素容器，可放 `shape`、`line`、`polyline`、`img`、`table`、`icon`、`embed`、`chart`、`undefined`
 - `<note>?` - 演讲者备注，内部可放 `<content>`
 
 这意味着 `<title>`、`<headline>`、`<body>`、`<caption>` 不能直接放在 `<slide>` 下。
@@ -129,6 +129,15 @@ XSD 中的 `title`、`headline`、`sub-headline`、`body`、`caption` 主要出�
 - `<a>`
 - `<shadow>`
 - `<outline>`
+- `<formula>`
+
+公式写法：
+
+```xml
+<p>公式：<formula><latex><![CDATA[ E = mc^2 ]]></latex></formula></p>
+```
+
+`<formula>` 是内联元素；当前只支持一个 `<latex>` 子元素。LaTeX 内容必须放在 `CDATA` 中，且 `CDATA` 内不要写 XML 转义；宏只使用服务端支持范围内的写法，优先用基础运算符、`\frac`、`\sqrt`、`matrix`。
 
 示例：
 
@@ -188,6 +197,13 @@ XSD 中的 `title`、`headline`、`sub-headline`、`body`、`caption` 主要出�
 - `<shadow>`
 - `<content>`
 
+`type` 常用取值：`text`（文本框）、`rect`、`round-rect`（圆角矩形）、`ellipse`（椭圆/圆）、`triangle`、`diamond`、`parallelogram`、`trapezoid`、`custom`（配合 `path` 属性写 SVG 路径串）。箭头、星形、标注气泡、`chevron`、`flow-chart-*` 等更多形状见 XSD `ShapeType` 枚举。
+
+其它可选属性：
+
+- `presetHandlers`：控制点，用于圆角等。例如 `<shape type="rect" presetHandlers="60">` = 圆角半径 60px 的圆角矩形；多个控制点用逗号分隔。
+- `path`：仅 `type="custom"` 时使用，SVG 路径串。
+
 ### line
 
 ```xml
@@ -198,20 +214,30 @@ XSD 中的 `title`、`headline`、`sub-headline`、`body`、`caption` 主要出�
 
 `line` 使用的是 `startX` / `startY` / `endX` / `endY`，不是 `x1` / `y1` / `x2` / `y2`。
 
+### polyline
+
+折线 / 曲线连接线，用外接矩形定位（`topLeftX` / `topLeftY` / `width` / `height`），不是端点坐标；`<border>` 必填（无 border 不可见）。`type` 默认 `bent-connector2`（可选 `bent-connector2-5` 折线 / `curved-connector2-5` 曲线）。
+
+```xml
+<polyline topLeftX="120" topLeftY="120" width="200" height="100">
+  <border color="rgb(43, 47, 54)" width="2"/>
+</polyline>
+```
+
 ### img
 
 ```xml
-<img src="file_token_or_url" topLeftX="80" topLeftY="120" width="320" height="180"/>
+<img src="file_token_或_@本地路径" topLeftX="80" topLeftY="120" width="320" height="180"/>
 ```
 
 `img` 使用 `topLeftX` / `topLeftY`，不是 `x` / `y`。
 
-`src` 只支持：`slides +media-upload` 返回的 `file_token`，或 `@<本地路径>` 占位符（仅 `+create --slides` 自动上传并替换）。**禁止使用 http(s) 外链 URL**——飞书 slides 渲染端不会代理外链图，外链 src 在 PPT 里通常不显示。本地图片详见 [lark-slides-create.md](lark-slides-create.md#本地图片path-占位符) / [lark-slides-media-upload.md](lark-slides-media-upload.md)。
+`src` 只支持：`slides +media-upload` 返回的 `file_token`，或 `@<本地路径>` 占位符（`+create --slides` 和 `+add-slide` 会自动上传并替换）。**禁止使用 http(s) 外链 URL**——飞书 slides 渲染端不会代理外链图，外链 src 在 PPT 里通常不显示。本地图片详见 [lark-slides-create.md](lark-slides-create.md#本地图片path-占位符) / [lark-slides-media-upload.md](lark-slides-media-upload.md)。
 
 本地图片的两种姿势：
 
 - 新建带图 PPT：`+create --slides` 里直接写 `src="@./pic.png"`，CLI 在创空白 PPT 后、加 slides 前自动上传并替换 token
-- 给已有 PPT 加带图新页：先 `slides +media-upload --file ./pic.png --presentation $PID` 拿 token，再用 token 写进 `xml_presentation.slide create` 的 XML
+- 给已有 PPT 加带图新页：`+add-slide --slide` 的 XML 里直接写 `src="@./pic.png"`，CLI 上传后替换 token 再提交页面
 
 > **注意**：`width`/`height` 是**裁剪后**的显示尺寸。比例和原图不一致时会自动裁剪（无法靠属性关闭），想避免裁剪就让 `width:height` 对齐原图比例。
 
@@ -238,6 +264,7 @@ XSD 中的 `title`、`headline`、`sub-headline`、`body`、`caption` 主要出�
 - `<colgroup>` 直接子元素只有 `<col width="...">`，width 定义列宽，默认 110。
 - `<tr height="...">` 直接子元素只有 `<td>`，height 定义行高，默认 37。
 - `<td>` 直接子元素只有 `<fill>`（背景）、`<content>`（文字）和边框配置（一般不用），不能嵌套 `<shape>`、`<img>`、`<icon>`。
+- 合并单元格：`<td>` 上用 `colspan`（跨列，默认 1）和 `rowspan`（跨行，默认 1）；被合并覆盖的单元格不再写对应 `<td>`。
 
 表头默认的白底白字视觉效果极差，必须设置背景和文字颜色，需在首行每个 `<td>` 上加 `<fill>`（配合 `bold` 与对比文字色）与正文行区分。
 
@@ -294,9 +321,53 @@ XSD 中的 `title`、`headline`、`sub-headline`、`body`、`caption` 主要出�
 
 `<chart>` 直接子元素必须有 `<chartPlotArea>`（绘图区）和 `<chartData>`（数据）；`<chartTitle>`、`<chartSubTitle>`、`<chartStyle>`、`<chartLegend>`、`<chartTooltip>` 可选，如果想不展示标题、副标题、图例或悬浮提示，省略相应元素标签即可。
 
+`<chartStyle>` 常用子元素：
+
+- `<chartBackground>`：`color` 省略时由渲染端决定默认背景；需要完全透明请显式写 `color="rgba(0, 0, 0, 0)"`
+- `<chartBorder>`：无边框可写 `width="0"`，或直接不写 `<chartBorder>` 元素
+
+#### 图表渐变 `<fillGradient>` / `<strokeGradient>`
+
+图表支持渐变填充/描边，`<fillGradient>` 用于面积、柱子、数据点、扇区填充，`<strokeGradient>` 用于线条、数据点边框、柱子边框。渐变只能挂在系列级或单元素级，不要挂在 `<chartPlot>` 全局层。
+
+可挂载位置：
+
+- 系列级：`<chartBars>` / `<chartPoints>` 支持 `<fillGradient>` 与 `<strokeGradient>`；`<chartLine>` 只支持 `<strokeGradient>`；`<chartArea>` / `<chartSectors>` 只支持 `<fillGradient>`
+- 单元素级：`<chartBar index="...">` / `<chartPoint index="...">` / `<chartSector index="...">` 只支持 `<fillGradient>`
+- 全局级：`<chartPlot>` 下的 `<chartLines>` / `<chartAreas>` / `<chartBars>` / `<chartPoints>` 不支持渐变
+
+结构要点：`type` 必填，可为 `linear` 或 `radial`；`linear` 用 `x0` / `y0` / `x1` / `y1`，`radial` 用 `r0` / `r1`；`<stops>` 至少包含 2 个 `<stop>`，`offset` 与 `opacity` 取值均为 `[0, 1]`。
+
+```xml
+<chartSeries index="1">
+  <chartBars>
+    <fillGradient type="linear" x0="0" y0="0" x1="0" y1="1">
+      <stops>
+        <stop offset="0" color="rgb(28, 71, 120)"/>
+        <stop offset="1" color="rgb(28, 71, 120)" opacity="0.3"/>
+      </stops>
+    </fillGradient>
+  </chartBars>
+</chartSeries>
+```
+
 隐藏 `<chart>` 的图例只能通过不写或删除 `<chartLegend>` 实现，`<chartLegend>` 不支持 `position="none"`。
 
 详细用法见 [slides_xml_schema_definition.xml](slides_xml_schema_definition.xml)。
+
+### embed
+
+嵌入内容容器：外层 `<embed>` 承载 Slides 的摆放和效果属性（`topLeftX`/`topLeftY`/`width`/`height` 必填，`rotation`/`flipX`/`flipY`/`alpha` 可选），内层承载外部标准内容。当前内层内容为标准 SVG，`<svg>` 必须使用 `http://www.w3.org/2000/svg` 命名空间，且仅描述嵌入内容本身，不承载 Slides 布局属性。
+
+```xml
+<embed topLeftX="80" topLeftY="120" width="200" height="120">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 120">
+    <circle cx="100" cy="60" r="40" fill="rgba(37, 99, 235, 1)"/>
+  </svg>
+</embed>
+```
+
+`<embed>` 直接子元素为一个 `<svg>`（必需），以及可选的 `<reflection>`（倒影）与 `<shadow>`（阴影）。
 
 ## 颜色与样式
 
@@ -361,7 +432,7 @@ XSD 中的 `title`、`headline`、`sub-headline`、`body`、`caption` 主要出�
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
-<presentation xmlns="http://www.larkoffice.com/sml/2.0" width="960" height="540">
+<presentation xmlns="https://www.larkoffice.com/sml/2.0" width="960" height="540">
   <title>季度报告</title>
   <theme>
     <textStyles>
@@ -409,7 +480,7 @@ XSD 中的 `title`、`headline`、`sub-headline`、`body`、`caption` 主要出�
 
 ## 最佳实践
 
-1. 始终带上命名空间 `xmlns="http://www.larkoffice.com/sml/2.0"`
+1. 始终带上命名空间 `xmlns="https://www.larkoffice.com/sml/2.0"`
 2. 用 `shape type="text"` + `content` 表达页面文本
 3. 用 `topLeftX` / `topLeftY`、`startX` / `startY` 等 schema 中定义的属性名
 4. 优先使用 `rgb` / `rgba` 颜色格式；渐变必须使用 `rgba()` 且带百分比停靠点
@@ -424,5 +495,5 @@ XSD 中的 `title`、`headline`、`sub-headline`、`body`、`caption` 主要出�
 ## Schema 版本信息
 
 - **版本**: 2.0.0
-- **命名空间**: http://www.larkoffice.com/sml/2.0
+- **命名空间**: https://www.larkoffice.com/sml/2.0
 - **发布日期**: 2025-11-03

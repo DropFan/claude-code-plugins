@@ -19,7 +19,7 @@
 2. 用 `slides +xml-get` 回读，确认是否已有部分页面写入。
 3. 检查失败页是否含未转义字符：`Q&A -> Q&amp;A`，文本 `<` / `>` 写成 `&lt;` / `&gt;`，属性 URL `a=1&b=2 -> a=1&amp;b=2`。
 4. 检查标签闭合、属性引号、`<content>` 结构，以及 `<slide>` 直接子元素。
-5. 页面空白、溢出、重叠或越界时，按 [validation-checklist.md](validation-checklist.md) 运行 XML 文本重叠检查，并人工核对越界、截断、图文压盖等视觉风险；工具当前只会报告 `xml_not_well_formed` / `bbox_overlap`。
+5. 页面空白、溢出、重叠或越界时，按 [validation-checklist.md](validation-checklist.md) 运行 `xml_text_overlap_lint.py`；先修复所有 `error`，再对 `warning` 指向的页面和元素做截图复核。
 6. 如果使用 `--slides '[...]'`，怀疑 shell 截断时直接切到两步创建：先 `slides +create`，再用 `xml_presentation.slide.create` 逐页添加。
 7. 局部问题用 `+replace-slide` 块级修正；整页结构要改时再用 `slide.delete` 旧页 + `slide.create` 新页。
 
@@ -49,7 +49,6 @@
 | 403 权限不足 | scope 或文档权限不匹配 | 确认 scope 和文档权限；无权限时根据错误响应引导用户解决 |
 | 404 演示文稿不存在 | `xml_presentation_id` 不正确或无权限 | 检查 token；wiki URL 需先解析真实 `obj_token` |
 | 404 幻灯片不存在 | `slide_id` 不正确 | 重新读取 presentation 或 slide，确认最新 ID |
-| 400 无法删除唯一幻灯片 | 演示文稿至少保留一页 | 先创建新页，再删除旧页 |
 | 1061002 媒体上传 params error | slides 媒体上传参数不符合约定 | 用 `slides +media-upload`，不要手拼原生 `medias/upload_all`；slides 唯一可用 `parent_type` 是 `slide_file` |
 | 1061004 forbidden | 当前用户对演示文稿无编辑权限 | 确认当前用户对目标 PPT 有编辑权限 |
 | 3350001 | XML 非 well-formed、XML 结构不符合服务端要求，或 replace 片段问题 | 优先检查未转义字符；replace 场景再看 `block_id` 和 `<content/>` |
@@ -60,4 +59,4 @@
 
 - 图片上传、`@path` 占位符、`file_token`：见 [lark-slides-media-upload.md](lark-slides-media-upload.md) 和 [lark-slides-create.md](lark-slides-create.md)。
 - 块级替换、`block_id`、3350001 replace 细节：见 [lark-slides-replace-slide.md](lark-slides-replace-slide.md)。
-- 原生 `slide.create` 包装、`before_slide_id` 和 jq 模板：见 [lark-slides-xml-presentation-slide-create.md](lark-slides-xml-presentation-slide-create.md)。
+- 追加/插入单页、`--before-slide-id` 和 `--slide @file` 绕开转义：见 [lark-slides-add-slide.md](lark-slides-add-slide.md)。
